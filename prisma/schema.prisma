@@ -23,7 +23,6 @@ model Admin {
   id             String      @id @default(uuid())
   email          String      @unique
   passwordHash   String
-  name           String
   role           AdminRole   // SUPERADMIN or ADMIN
   associationId  String
   association    Association @relation(fields: [associationId], references: [id])
