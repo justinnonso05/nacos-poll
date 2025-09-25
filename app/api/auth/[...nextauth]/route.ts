@@ -2,10 +2,13 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
+import type { SessionStrategy } from "next-auth"
+import type { JWT } from "next-auth/jwt"
+import type { Session } from "next-auth"
 
 const prisma = new PrismaClient()
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -31,10 +34,10 @@ const handler = NextAuth({
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy, // <-- Type annotation added here
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: any }) { // <-- Type annotation added here
       if (user) {
         token.id = user.id
         token.role = user.role
@@ -42,7 +45,7 @@ const handler = NextAuth({
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) { // <-- Type annotation added here
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
@@ -52,8 +55,9 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: "/admin/login", // Use your custom login page
+    signIn: "/admin/login",
   },
-})
+}
 
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }

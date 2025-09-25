@@ -38,8 +38,10 @@ enum AdminRole {
 model Voter {
   id             String      @id @default(uuid())
   email          String      @unique
-  passwordHash   String
-  name           String
+  password       String
+  first_name     String
+  last_name      String
+  level          String
   studentId      String
   hasVoted       Boolean     @default(false)
   associationId  String
@@ -56,7 +58,7 @@ model Election {
   associationId  String
   association    Association @relation(fields: [associationId], references: [id])
   candidates     Candidate[]
-  votes      Vote[]
+  votes          Vote[]
   startAt        DateTime
   endAt          DateTime
   isActive       Boolean     @default(false)
