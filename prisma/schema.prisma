@@ -15,6 +15,7 @@ model Association {
   admins      Admin[]
   voters      Voter[]
   elections   Election[]
+  positions   Position[] 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -66,16 +67,35 @@ model Election {
   updatedAt      DateTime    @updatedAt
 }
 
+model Position {
+  id             String      @id @default(uuid())
+  name           String
+  description    String?
+  order          Int         @default(0)
+  maxCandidates  Int         @default(10)
+  associationId  String
+  association    Association @relation(fields: [associationId], references: [id])
+  candidates     Candidate[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([name, associationId]) // Unique position per association
+}
+
 model Candidate {
   id           String      @id @default(uuid())
   name         String
   manifesto    String?
-  photoUrl     String?
+  photoUrl     String?     @default("https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=face")
   electionId   String
   election     Election    @relation(fields: [electionId], references: [id])
+  positionId   String
+  position     Position    @relation(fields: [positionId], references: [id])
   votes        Vote[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  @@unique([electionId, positionId, name]) // Prevent duplicate names per position per election
 }
 
 model Vote {
@@ -88,5 +108,6 @@ model Vote {
   candidate    Candidate   @relation(fields: [candidateId], references: [id])
   createdAt    DateTime    @default(now())
 
-  @@unique([voterId, electionId]) // Prevent double voting
+  // Prevent double voting for the same candidate in the same election
+  @@unique([voterId, electionId, candidateId])
 }

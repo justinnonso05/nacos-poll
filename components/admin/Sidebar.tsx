@@ -15,7 +15,8 @@ import {
   LogOut,
   Vote,
   Sun,
-  Moon
+  Moon,
+  Crown
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
@@ -31,6 +32,11 @@ const navItems = [
     title: "Voters",
     href: "/admin/dashboard/voters",
     icon: Users,
+  },
+  {
+    title: "Positions",
+    href: "/admin/dashboard/positions",
+    icon: Crown,
   },
   {
     title: "Candidates",
