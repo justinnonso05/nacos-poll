@@ -95,19 +95,18 @@ model Candidate {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  @@unique([electionId, positionId, name]) // Prevent duplicate names per position per election
+  @@unique([electionId, positionId, name])
 }
 
 model Vote {
   id           String      @id @default(uuid())
   voterId      String
-  voter        Voter       @relation(fields: [voterId], references: [id])
+  voter        Voter       @relation(fields: [voterId], references: [id], onDelete: Cascade)
   electionId   String
-  election     Election    @relation(fields: [electionId], references: [id])
+  election     Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   candidateId  String
-  candidate    Candidate   @relation(fields: [candidateId], references: [id])
+  candidate    Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   createdAt    DateTime    @default(now())
 
-  // Prevent double voting for the same candidate in the same election
   @@unique([voterId, electionId, candidateId])
 }

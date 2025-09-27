@@ -72,7 +72,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Position Name</Label>
+            <Label htmlFor="name" className="mb-2">Position Name</Label>
             <Input
               id="name"
               value={formData.name}
@@ -83,7 +83,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
           </div>
 
           <div>
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="description" className="mb-2">Description (Optional)</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -95,7 +95,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="order">Display Order</Label>
+              <Label htmlFor="order" className="mb-2">Display Order</Label>
               <Input
                 id="order"
                 type="number"
@@ -106,7 +106,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
             </div>
 
             <div>
-              <Label htmlFor="maxCandidates">Max Candidates</Label>
+              <Label htmlFor="maxCandidates" className="mb-2">Max Candidates</Label>
               <Input
                 id="maxCandidates"
                 type="number"

@@ -35,6 +35,7 @@ export const authOptions = {
   ],
   session: {
     strategy: "jwt" as SessionStrategy, // <-- Type annotation added here
+    maxAge: 60 * 60 * 24,
   },
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: any }) { // <-- Type annotation added here

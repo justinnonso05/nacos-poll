@@ -16,9 +16,9 @@ async function getDashboardData(associationId: string) {
   const activeElection = await prisma.election.findFirst({
     where: {
       associationId,
-      isActive: true,
-      startAt: { lte: new Date() },
-      endAt: { gte: new Date() }
+      // isActive: true,
+      // startAt: { lte: new Date() },
+      // endAt: { gte: new Date() }
     },
     include: {
       association: {

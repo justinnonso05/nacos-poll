@@ -41,12 +41,19 @@ interface Election {
   title: string
 }
 
+interface Position {
+  id: string
+  name: string
+  order: number
+}
+
 interface CandidatesTableProps {
   candidates: Candidate[]
   elections: Election[]
+  positions: Position[] // <-- Add this line
 }
 
-export default function CandidatesTable({ candidates: initialCandidates, elections }: CandidatesTableProps) {
+export default function CandidatesTable({ candidates: initialCandidates, elections, positions }: CandidatesTableProps) {
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedElection, setSelectedElection] = useState<string>('all')
@@ -307,6 +314,7 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
         open={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         onUpdate={handleUpdateCandidate}
+        positions={positions} // <-- Pass positions here
       />
     </>
   )

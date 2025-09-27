@@ -158,7 +158,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="first_name">First Name</Label>
+                  <Label htmlFor="first_name" className="mb-2">First Name</Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
@@ -168,7 +168,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
                 </div>
 
                 <div>
-                  <Label htmlFor="last_name">Last Name</Label>
+                  <Label htmlFor="last_name" className="mb-2">Last Name</Label>
                   <Input
                     id="last_name"
                     value={formData.last_name}
@@ -179,7 +179,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
               </div>
 
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="mb-2">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -191,7 +191,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="studentId">Student ID</Label>
+                  <Label htmlFor="studentId" className="mb-2">Student ID</Label>
                   <Input
                     id="studentId"
                     value={formData.studentId}
@@ -201,7 +201,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
                 </div>
 
                 <div>
-                  <Label htmlFor="level">Level</Label>
+                  <Label htmlFor="level" className="mb-2">Level</Label>
                   <Input
                     id="level"
                     value={formData.level}
@@ -221,12 +221,12 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
 
             <CardContent className="space-y-4">
               <div>
-                <Label>Username</Label>
+                <Label className="mb-2">Username</Label>
                 <Input value={voter.studentId} disabled />
               </div>
 
               <div>
-                <Label>Password</Label>
+                <Label className="mb-2">Password</Label>
                 <div className="flex gap-2">
                   <Input
                     type={showPassword ? "text" : "password"}

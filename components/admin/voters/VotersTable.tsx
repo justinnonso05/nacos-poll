@@ -78,10 +78,28 @@ export default function VotersTable({ voters: initialVoters }: VotersTableProps)
     if (!confirm(`Are you sure you want to delete ${voterIds.length} voter(s)?`)) return
 
     try {
-      // TODO: Implement bulk delete API
-      toast.success(`Deleted ${voterIds.length} voter(s)`)
-      setVoters(prev => prev.filter(voter => !voterIds.includes(voter.id)))
-      setSelectedVoters([])
+      let res
+      if (voterIds.length === 1) {
+        // Single delete
+        res = await fetch(`/api/voters/${voterIds[0]}`, {
+          method: "DELETE",
+        })
+      } else {
+        // Bulk delete
+        res = await fetch(`/api/voters/${voterIds[0]}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: voterIds }),
+        })
+      }
+      const data = await res.json()
+      if (res.ok) {
+        toast.success(data.message || `Deleted ${voterIds.length} voter(s)`)
+        setVoters(prev => prev.filter(voter => !voterIds.includes(voter.id)))
+        setSelectedVoters([])
+      } else {
+        toast.error(data.message || "Failed to delete voters")
+      }
     } catch (error) {
       toast.error('Failed to delete voters')
     }

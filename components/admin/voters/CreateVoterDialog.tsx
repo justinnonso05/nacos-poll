@@ -74,7 +74,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="first_name">First Name</Label>
+              <Label htmlFor="first_name" className="mb-2">First Name</Label>
               <Input
                 id="first_name"
                 value={formData.first_name}
@@ -84,7 +84,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
             </div>
 
             <div>
-              <Label htmlFor="last_name">Last Name</Label>
+              <Label htmlFor="last_name" className="mb-2">Last Name</Label>
               <Input
                 id="last_name"
                 value={formData.last_name}
@@ -95,7 +95,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
           </div>
 
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="mb-2">Email</Label>
             <Input
               id="email"
               type="email"
@@ -106,18 +106,18 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
           </div>
 
           <div>
-            <Label htmlFor="level">Level</Label>
+            <Label htmlFor="level" className="mb-2">Level</Label>
             <Input
               id="level"
               value={formData.level}
               onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
-              placeholder="e.g. 100L, 200L, 300L"
+              placeholder="e.g. 100, 200, 300"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="studentId">Student ID (Matric Number)</Label>
+            <Label htmlFor="studentId" className="mb-2">Student ID (Matric Number)</Label>
             <Input
               id="studentId"
               value={formData.studentId}

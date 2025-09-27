@@ -74,12 +74,29 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return fail("Admin not found", null, 404)
   }
 
-  await prisma.voter.delete({
-    where: { 
-      id: params.id,
-      associationId: admin.associationId 
-    }
-  })
+  // Try to parse bulk delete body
+  let body: any = null
+  try {
+    body = await req.json()
+  } catch {}
 
-  return success("Voter deleted successfully", null)
+  if (body && Array.isArray(body.ids)) {
+    // Bulk delete
+    const result = await prisma.voter.deleteMany({
+      where: {
+        id: { in: body.ids },
+        associationId: admin.associationId
+      }
+    })
+    return success(`${result.count} voters deleted successfully`, null)
+  } else {
+    // Single delete
+    await prisma.voter.delete({
+      where: { 
+        id: params.id,
+        associationId: admin.associationId 
+      }
+    })
+    return success("Voter deleted successfully", null)
+  }
 }

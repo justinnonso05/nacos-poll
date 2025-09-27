@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { toast } from "sonner"
 import CreatePositionDialog from "./CreatePositionDialog"
 import PositionDetailModal from "./PositionDetailModal"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface Position {
   id: string
@@ -142,14 +143,25 @@ export default function PositionsTable({ positions: initialPositions }: Position
                           <Edit className="h-4 w-4 mr-2" />
                           Edit Position
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDeletePosition(position.id, position.name)}
-                          className="text-destructive"
-                          disabled={position._count.candidates > 0}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuItem
+                                onClick={() => handleDeletePosition(position.id, position.name)}
+                                className="text-destructive"
+                                disabled={position._count.candidates > 0}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </TooltipTrigger>
+                            {position._count.candidates > 0 && (
+                              <TooltipContent>
+                                You cannot delete a position with assigned candidates. Please reassign or remove candidates first.
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

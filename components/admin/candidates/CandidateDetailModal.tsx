@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Save, X, Vote, Calendar, User } from "lucide-react"
 import { toast } from "sonner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Candidate {
   id: string
@@ -39,15 +40,17 @@ interface CandidateDetailModalProps {
   open: boolean
   onClose: () => void
   onUpdate: (candidate: Candidate) => void
+  positions: { id: string; name: string }[] // Pass available positions as prop
 }
 
-export default function CandidateDetailModal({ candidate, open, onClose, onUpdate }: CandidateDetailModalProps) {
+export default function CandidateDetailModal({ candidate, open, onClose, onUpdate, positions = [] }: CandidateDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     manifesto: '',
-    photoUrl: ''
+    photoUrl: '',
+    positionId: '' // <-- Add this line
   })
 
   useEffect(() => {
@@ -55,7 +58,8 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
       setFormData({
         name: candidate.name || '',
         manifesto: candidate.manifesto || '',
-        photoUrl: candidate.photoUrl || ''
+        photoUrl: candidate.photoUrl || '',
+        positionId: candidate.position.id || '' // <-- Initialize from candidate
       })
     }
   }, [candidate])
@@ -92,7 +96,8 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
       setFormData({
         name: candidate.name || '',
         manifesto: candidate.manifesto || '',
-        photoUrl: candidate.photoUrl || ''
+        photoUrl: candidate.photoUrl || '',
+        positionId: candidate.position.id || '' // <-- Add this line
       })
     }
     setIsEditing(false)
@@ -174,7 +179,7 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                   </Avatar>
                   {isEditing && (
                     <div className="w-full">
-                      <Label htmlFor="photoUrl" className="text-xs">Photo URL</Label>
+                      <Label htmlFor="photoUrl" className="text-xs mb-2">Photo URL</Label>
                       <Input
                         id="photoUrl"
                         type="url"
@@ -189,7 +194,7 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
 
                 <div className="flex-1 space-y-4">
                   <div>
-                    <Label htmlFor="name">Candidate Name</Label>
+                    <Label htmlFor="name" className="mb-2">Candidate Name</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -204,7 +209,25 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="text-sm font-medium">Position</div>
-                        <div className="text-sm text-muted-foreground">{candidate.position.name}</div>
+                        {isEditing ? (
+                          <Select
+                            value={formData.positionId}
+                            onValueChange={val => setFormData(prev => ({ ...prev, positionId: val }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select position" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {positions.map(pos => (
+                                <SelectItem key={pos.id} value={pos.id}>
+                                  {pos.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">{candidate.position.name}</div>
+                        )}
                       </div>
                     </div>
 
@@ -221,7 +244,7 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
 
               {/* Manifesto */}
               <div>
-                <Label htmlFor="manifesto">Manifesto</Label>
+                <Label htmlFor="manifesto" className="mb-2">Manifesto</Label>
                 <Textarea
                   id="manifesto"
                   value={formData.manifesto}
@@ -234,7 +257,7 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
             </CardContent>
           </Card>
 
-          {/* Election Information */}
+          {/* Election Information
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Election Information</CardTitle>
@@ -273,7 +296,7 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Vote Statistics */}
           <Card>

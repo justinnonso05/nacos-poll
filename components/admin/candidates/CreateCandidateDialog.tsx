@@ -116,7 +116,7 @@ export default function CreateCandidateDialog({ elections, onCandidateCreated }:
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Candidate Name</Label>
+            <Label htmlFor="name" className="mb-2">Candidate Name</Label>
             <Input
               id="name"
               value={formData.name}
@@ -127,7 +127,7 @@ export default function CreateCandidateDialog({ elections, onCandidateCreated }:
           </div>
 
           <div>
-            <Label htmlFor="election">Election</Label>
+            <Label htmlFor="election" className="mb-2">Election</Label>
             <Select
               value={formData.electionId}
               onValueChange={(value) => setFormData(prev => ({ ...prev, electionId: value }))}
@@ -147,7 +147,7 @@ export default function CreateCandidateDialog({ elections, onCandidateCreated }:
           </div>
 
           <div>
-            <Label htmlFor="position">Position</Label>
+            <Label htmlFor="position" className="mb-2">Position</Label>
             <Select
               value={formData.positionId}
               onValueChange={(value) => setFormData(prev => ({ ...prev, positionId: value }))}
@@ -181,7 +181,7 @@ export default function CreateCandidateDialog({ elections, onCandidateCreated }:
           </div>
 
           <div>
-            <Label htmlFor="photoUrl">Photo URL (Optional)</Label>
+            <Label htmlFor="photoUrl" className="mb-2">Photo URL (Optional)</Label>
             <Input
               id="photoUrl"
               type="url"
@@ -192,7 +192,7 @@ export default function CreateCandidateDialog({ elections, onCandidateCreated }:
           </div>
 
           <div>
-            <Label htmlFor="manifesto">Manifesto (Optional)</Label>
+            <Label htmlFor="manifesto" className="mb-2">Manifesto (Optional)</Label>
             <Textarea
               id="manifesto"
               value={formData.manifesto}
