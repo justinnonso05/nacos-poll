@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
+              <Label htmlFor="email" className="text-foreground mb-3">
                 Email Address
               </Label>
               <Input
@@ -60,12 +60,12 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@nacosui.edu"
-                className="w-full"
+                className="h-12 w-full"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">
+              <Label htmlFor="password" className="text-foreground mb-3">
                 Password
               </Label>
               <div className="relative">
@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pr-10"
+                  className="h-12 w-full pr-10"
                 />
                 <button
                   type="button"
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
             
             <Button
               type="submit"
-              className="w-full"
+              className="h-12 w-full"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}

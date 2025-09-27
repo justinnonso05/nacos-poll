@@ -7,10 +7,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Edit, Trash2, MoreHorizontal, Eye, Vote, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Edit, Trash2, MoreHorizontal, Eye, Vote, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import CreateCandidateDialog from "./CreateCandidateDialog"
 import CandidateDetailModal from "./CandidateDetailModal"
 
@@ -22,8 +30,8 @@ interface Candidate {
   election: {
     id: string
     title: string
-    startAt: string    // Changed from Date to string
-    endAt: string      // Changed from Date to string
+    startAt: string    
+    endAt: string      
     isActive: boolean
   }
   position: {
@@ -50,7 +58,7 @@ interface Position {
 interface CandidatesTableProps {
   candidates: Candidate[]
   elections: Election[]
-  positions: Position[] // <-- Add this line
+  positions: Position[]
 }
 
 export default function CandidatesTable({ candidates: initialCandidates, elections, positions }: CandidatesTableProps) {
@@ -60,6 +68,8 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
   const [loading, setLoading] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null)
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -111,12 +121,17 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
     )
   }
 
-  const handleDeleteCandidate = async (candidateId: string, candidateName: string) => {
-    if (!confirm(`Are you sure you want to delete "${candidateName}"?`)) return
+  const handleDeleteClick = (candidate: Candidate) => {
+    setCandidateToDelete(candidate)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteCandidate = async () => {
+    if (!candidateToDelete) return
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/candidates/${candidateId}`, {
+      const response = await fetch(`/api/candidates/${candidateToDelete.id}`, {
         method: 'DELETE'
       })
 
@@ -124,7 +139,9 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
 
       if (response.ok && result.status === 'success') {
         toast.success('Candidate deleted successfully')
-        setCandidates(prev => prev.filter(c => c.id !== candidateId))
+        setCandidates(prev => prev.filter(c => c.id !== candidateToDelete.id))
+        setShowDeleteDialog(false)
+        setCandidateToDelete(null)
       } else {
         toast.error(result.message || 'Failed to delete candidate')
       }
@@ -143,6 +160,8 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
       .toUpperCase()
       .slice(0, 2)
   }
+
+  const canDeleteCandidate = candidateToDelete && candidateToDelete._count.votes === 0
 
   return (
     <>
@@ -169,20 +188,6 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
                 className="pl-10"
               />
             </div>
-
-            <Select value={selectedElection} onValueChange={setSelectedElection}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by election" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Elections</SelectItem>
-                {elections.map((election) => (
-                  <SelectItem key={election.id} value={election.id}>
-                    {election.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <Table>
@@ -190,7 +195,6 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
               <TableRow>
                 <TableHead>Candidate</TableHead>
                 <TableHead>Position</TableHead>
-                <TableHead>Election</TableHead>
                 <TableHead>Votes</TableHead>
                 <TableHead>Manifesto</TableHead>
                 <TableHead>Actions</TableHead>
@@ -206,7 +210,7 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage 
-                          src={candidate.photoUrl || undefined}  // Fix: Handle null values
+                          src={candidate.photoUrl || undefined}
                           alt={candidate.name}
                         />
                         <AvatarFallback>
@@ -219,7 +223,6 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
                   <TableCell>
                     <Badge variant="outline">{candidate.position.name}</Badge>
                   </TableCell>
-                  <TableCell>{candidate.election.title}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Vote className="h-4 w-4 text-muted-foreground" />
@@ -248,9 +251,8 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
                           Edit Candidate
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleDeleteCandidate(candidate.id, candidate.name)}
+                          onClick={() => handleDeleteClick(candidate)}
                           className="text-destructive"
-                          disabled={candidate._count.votes > 0}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
@@ -308,13 +310,69 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
         </CardContent>
       </Card>
 
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {canDeleteCandidate ? (
+                <>
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                  Delete Candidate
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  Cannot Delete Candidate
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {canDeleteCandidate ? (
+                <>
+                  Are you sure you want to delete <strong>{candidateToDelete?.name}</strong>? 
+                  This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Cannot delete <strong>{candidateToDelete?.name}</strong> because they have received{' '}
+                  <strong>{candidateToDelete?._count.votes} vote{candidateToDelete?._count.votes !== 1 ? 's' : ''}</strong>.
+                  <br /><br />
+                  Candidates who have received votes cannot be deleted to maintain election integrity.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setCandidateToDelete(null)
+              }}
+            >
+              Cancel
+            </Button>
+            {canDeleteCandidate && (
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteCandidate}
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Candidate'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Candidate Detail Modal */}
       <CandidateDetailModal
         candidate={selectedCandidate}
         open={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         onUpdate={handleUpdateCandidate}
-        positions={positions} // <-- Pass positions here
+        positions={positions}
       />
     </>
   )

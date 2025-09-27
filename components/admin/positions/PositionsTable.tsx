@@ -5,17 +5,24 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, MoreHorizontal, Users, Eye } from "lucide-react"
+import { Edit, Trash2, MoreHorizontal, Users, Eye, AlertTriangle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import CreatePositionDialog from "./CreatePositionDialog"
 import PositionDetailModal from "./PositionDetailModal"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface Position {
   id: string
   name: string
-  description: string | null  // Change from undefined to null
+  description: string | null
   order: number
   maxCandidates: number
   _count: {
@@ -32,6 +39,8 @@ export default function PositionsTable({ positions: initialPositions }: Position
   const [loading, setLoading] = useState(false)
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [positionToDelete, setPositionToDelete] = useState<Position | null>(null)
 
   const fetchPositions = async () => {
     try {
@@ -57,12 +66,17 @@ export default function PositionsTable({ positions: initialPositions }: Position
     )
   }
 
-  const handleDeletePosition = async (positionId: string, positionName: string) => {
-    if (!confirm(`Are you sure you want to delete the position "${positionName}"?`)) return
+  const handleDeleteClick = (position: Position) => {
+    setPositionToDelete(position)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeletePosition = async () => {
+    if (!positionToDelete) return
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/positions/${positionId}`, {
+      const response = await fetch(`/api/positions/${positionToDelete.id}`, {
         method: 'DELETE'
       })
 
@@ -70,7 +84,9 @@ export default function PositionsTable({ positions: initialPositions }: Position
 
       if (response.ok && result.status === 'success') {
         toast.success('Position deleted successfully')
-        setPositions(prev => prev.filter(p => p.id !== positionId))
+        setPositions(prev => prev.filter(p => p.id !== positionToDelete.id))
+        setShowDeleteDialog(false)
+        setPositionToDelete(null)
       } else {
         toast.error(result.message || 'Failed to delete position')
       }
@@ -80,6 +96,8 @@ export default function PositionsTable({ positions: initialPositions }: Position
       setLoading(false)
     }
   }
+
+  const canDeletePosition = positionToDelete && positionToDelete._count.candidates === 0
 
   return (
     <>
@@ -143,25 +161,13 @@ export default function PositionsTable({ positions: initialPositions }: Position
                           <Edit className="h-4 w-4 mr-2" />
                           Edit Position
                         </DropdownMenuItem>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <DropdownMenuItem
-                                onClick={() => handleDeletePosition(position.id, position.name)}
-                                className="text-destructive"
-                                disabled={position._count.candidates > 0}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </TooltipTrigger>
-                            {position._count.candidates > 0 && (
-                              <TooltipContent>
-                                You cannot delete a position with assigned candidates. Please reassign or remove candidates first.
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(position)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -180,6 +186,62 @@ export default function PositionsTable({ positions: initialPositions }: Position
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {canDeletePosition ? (
+                <>
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                  Delete Position
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  Cannot Delete Position
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {canDeletePosition ? (
+                <>
+                  Are you sure you want to delete the position <strong>{positionToDelete?.name}</strong>? 
+                  This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Cannot delete the position <strong>{positionToDelete?.name}</strong> because it has{' '}
+                  <strong>{positionToDelete?._count.candidates} candidate{positionToDelete?._count.candidates !== 1 ? 's' : ''}</strong> assigned to it.
+                  <br /><br />
+                  Please reassign or remove all candidates from this position before deleting it to maintain election integrity.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setPositionToDelete(null)
+              }}
+            >
+              Cancel
+            </Button>
+            {canDeletePosition && (
+              <Button 
+                variant="destructive" 
+                onClick={handleDeletePosition}
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Position'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Position Detail Modal */}
       <PositionDetailModal

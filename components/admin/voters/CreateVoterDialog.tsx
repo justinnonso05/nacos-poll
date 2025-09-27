@@ -79,6 +79,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
                 id="first_name"
                 value={formData.first_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                className="h-11"
                 required
               />
             </div>
@@ -89,6 +90,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
                 id="last_name"
                 value={formData.last_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                className="h-11"
                 required
               />
             </div>
@@ -101,6 +103,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
               type="email"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="h-11"
               required
             />
           </div>
@@ -111,6 +114,7 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
               id="level"
               value={formData.level}
               onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
+              className="h-11"
               placeholder="e.g. 100, 200, 300"
               required
             />
@@ -122,15 +126,16 @@ export default function CreateVoterDialog({ associationId }: CreateVoterDialogPr
               id="studentId"
               value={formData.studentId}
               onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+              className="h-11"
               required
             />
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" className="h-11" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button type="submit" disabled={loading} className="flex-1 h-11">
               {loading ? "Creating..." : "Create Voter"}
             </Button>
           </div>

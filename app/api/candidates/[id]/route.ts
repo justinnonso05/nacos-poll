@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client"
+import { success, fail } from "@/lib/apiREsponse"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { success, fail } from "@/lib/apiREsponse"
 import { z } from "zod"
 
 const prisma = new PrismaClient()
@@ -13,9 +13,10 @@ const updateCandidateSchema = z.object({
   positionId: z.string().optional()
 })
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
+    
     if (!session?.user) {
       return fail("Unauthorized", null, 401)
     }
@@ -36,10 +37,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return fail("Invalid data", result.error.issues, 400)
     }
 
-    // Verify candidate belongs to admin's association
+    // Await params before using its properties
+    const { id } = await params
+
+    // Check candidate exists and belongs to admin's association
     const existingCandidate = await prisma.candidate.findFirst({
       where: {
-        id: params.id,
+        id: id,
         election: {
           associationId: admin.associationId
         }
@@ -72,7 +76,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         where: { 
           electionId: existingCandidate.electionId,
           positionId: result.data.positionId,
-          id: { not: params.id } // Exclude current candidate
+          id: { not: id } // Exclude current candidate
         }
       })
 
@@ -88,7 +92,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
           name: result.data.name,
           electionId: existingCandidate.electionId,
           positionId: result.data.positionId || existingCandidate.positionId,
-          id: { not: params.id }
+          id: { not: id }
         }
       })
 
@@ -98,7 +102,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const candidate = await prisma.candidate.update({
-      where: { id: params.id },
+      where: { id: id },
       data: result.data,
       include: {
         election: { 
@@ -130,9 +134,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
+    
     if (!session?.user) {
       return fail("Unauthorized", null, 401)
     }
@@ -146,10 +151,13 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       return fail("Admin not found", null, 404)
     }
 
-    // Verify candidate belongs to admin's association
+    // Await params before using its properties
+    const { id } = await params
+
+    // Check if candidate exists and belongs to admin's association
     const existingCandidate = await prisma.candidate.findFirst({
       where: {
-        id: params.id,
+        id: id,
         election: {
           associationId: admin.associationId
         }
@@ -162,20 +170,38 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     // Check if candidate has votes
     const voteCount = await prisma.vote.count({
-      where: { candidateId: params.id }
+      where: { candidateId: id }
     })
 
     if (voteCount > 0) {
-      return fail("Cannot delete candidate with existing votes", null, 400)
+      return fail("Cannot delete candidate with votes", null, 400)
     }
 
     await prisma.candidate.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return success("Candidate deleted successfully", null)
   } catch (error) {
-    console.error("Error deleting candidate:", error)
-    return fail("Internal server error", null, 500)
+    console.error("Delete candidate error:", error)
+    return fail("Failed to delete candidate", null, 500)
+  }
+}
+
+// If you have other methods (GET, PUT, etc.), apply the same fix
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return fail("Unauthorized", null, 401)
+    }
+
+    const { id } = await params // Await params here too
+
+    // ... rest of your GET logic
+  } catch (error) {
+    console.error("Get candidate error:", error)
+    return fail("Failed to get candidate", null, 500)
   }
 }

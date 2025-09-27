@@ -139,10 +139,6 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                 <CardTitle className="text-lg">Candidate Profile</CardTitle>
                 
                 <div className="flex items-center gap-2">
-                  <Badge variant={candidate.election.isActive ? "default" : "secondary"}>
-                    {candidate.election.isActive ? "Active Election" : "Inactive"}
-                  </Badge>
-                  
                   {!isEditing ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                       <Edit className="h-4 w-4 mr-2" />
@@ -231,13 +227,15 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                       </div>
                     </div>
 
+                    {!isEditing && (
                     <div className="flex items-center gap-2">
                       <Vote className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="text-sm font-medium">Votes Received</div>
-                        <div className="text-lg font-bold text-primary">{candidate._count.votes}</div>
-                      </div>
+                        <div>
+                          <div className="text-sm font-medium">Votes Received</div>
+                          <div className="text-lg font-bold text-primary">{candidate._count.votes}</div>
+                        </div>
                     </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -253,71 +251,6 @@ export default function CandidateDetailModal({ candidate, open, onClose, onUpdat
                   rows={6}
                   placeholder="Candidate's campaign manifesto and promises..."
                 />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Election Information
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Election Information</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Election Title</Label>
-                <div className="font-medium">{candidate.election.title}</div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Start Date</Label>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{formatDate(candidate.election.startAt)}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>End Date</Label>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{formatDate(candidate.election.endAt)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label>Election Status</Label>
-                <div className="flex items-center gap-2">
-                  <Badge variant={candidate.election.isActive ? "default" : "secondary"}>
-                    {candidate.election.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
-
-          {/* Vote Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Vote Statistics</CardTitle>
-            </CardHeader>
-
-            <CardContent>
-              <div className="text-center py-8">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {candidate._count.votes}
-                </div>
-                <div className="text-muted-foreground">
-                  Total Votes Received
-                </div>
-                <div className="mt-4 text-sm text-muted-foreground">
-                  {candidate.election.isActive 
-                    ? "Election is currently active" 
-                    : "Final vote count"
-                  }
-                </div>
               </div>
             </CardContent>
           </Card>

@@ -22,7 +22,7 @@ export default async function CandidatesPage() {
     redirect('/admin/login')
   }
 
-  const [candidatesData, elections] = await Promise.all([
+  const [candidatesData, elections, positions] = await Promise.all([
     prisma.candidate.findMany({
       where: {
         election: {
@@ -60,6 +60,13 @@ export default async function CandidatesPage() {
       where: { associationId: admin.associationId },
       select: { id: true, title: true },
       orderBy: { createdAt: 'desc' }
+    }),
+
+    // Add positions query
+    prisma.position.findMany({
+      where: { associationId: admin.associationId },
+      select: { id: true, name: true, description: true, order: true },
+      orderBy: { order: 'asc' }
     })
   ])
 
@@ -82,7 +89,11 @@ export default async function CandidatesPage() {
         </p>
       </div>
 
-      <CandidatesTable candidates={candidates} elections={elections} />
+      <CandidatesTable 
+        candidates={candidates} 
+        elections={elections} 
+        positions={positions} 
+      />
     </div>
   )
 }
