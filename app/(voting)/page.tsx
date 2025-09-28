@@ -26,7 +26,7 @@ async function getVoterSession() {
 }
 
 async function getActiveElectionData(associationId: string) {
-  // Get the single active election
+  // Get the single active election with association data
   const election = await prisma.election.findFirst({
     where: {
       associationId: associationId,
@@ -34,21 +34,25 @@ async function getActiveElectionData(associationId: string) {
       startAt: { lte: new Date() },
       endAt: { gte: new Date() }
     },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      startAt: true,
-      endAt: true
+    include: {
+      association: {
+        select: {
+          name: true,
+          logoUrl: true
+        }
+      }
     }
   })
 
   if (!election) return null
 
   return {
-    ...election,
+    id: election.id,
+    title: election.title,
+    description: election.description,
     startAt: election.startAt.toISOString(),
-    endAt: election.endAt.toISOString()
+    endAt: election.endAt.toISOString(),
+    association: election.association
   }
 }
 
@@ -91,7 +95,10 @@ export default async function VotingPage() {
     where: { id: session.id },
     include: {
       association: {
-        select: { name: true }
+        select: { 
+          name: true,
+          logoUrl: true 
+        }
       }
     }
   })
@@ -104,19 +111,19 @@ export default async function VotingPage() {
   // If voter has already voted, show thank you message
   if (voter.hasVoted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
+        <div className="text-center max-w-md bg-card rounded-lg border border-border p-6 shadow-sm">
+          <div className="w-16 h-16 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-green-800 mb-2">Vote Submitted!</h1>
-          <p className="text-green-700 mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Vote Submitted!</h1>
+          <p className="text-muted-foreground mb-6 text-sm sm:text-base">
             Your vote has been successfully recorded. Thank you for participating in the democratic process.
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
+            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
               Close
             </button>
           </form>
@@ -141,19 +148,19 @@ export default async function VotingPage() {
     })
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
+        <div className="text-center max-w-md bg-card rounded-lg border border-border p-6 shadow-sm">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
             {upcomingElection ? 'Voting Not Started' : 'No Active Elections'}
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-6 text-sm sm:text-base">
             {upcomingElection 
               ? `The election "${upcomingElection.title}" will begin on ${upcomingElection.startAt.toLocaleDateString()}.`
               : 'There are no active elections at this time.'
             }
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
+            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
               Close
             </button>
           </form>
@@ -167,14 +174,14 @@ export default async function VotingPage() {
 
   if (positions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">No Candidates Available</h1>
-          <p className="text-muted-foreground mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
+        <div className="text-center max-w-md bg-card rounded-lg border border-border p-6 shadow-sm">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Candidates Available</h1>
+          <p className="text-muted-foreground mb-6 text-sm sm:text-base">
             There are no candidates registered for the current election.
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
+            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
               Close
             </button>
           </form>
@@ -189,7 +196,7 @@ export default async function VotingPage() {
     firstName: voter.first_name,
     lastName: voter.last_name,
     studentId: voter.studentId,
-    association: voter.association.name
+    association: voter.association
   }
 
   return (
