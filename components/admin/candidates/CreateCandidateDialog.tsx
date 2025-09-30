@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -38,7 +38,7 @@ interface Election {
 }
 
 interface CreateCandidateDialogProps {
-  election: Election; // <-- Only pass the current election
+  election: Election;
   onCandidateCreated?: () => void;
 }
 
@@ -51,22 +51,31 @@ export default function CreateCandidateDialog({
   const [positions, setPositions] = useState<Position[]>([]);
   const [formData, setFormData] = useState({
     name: '',
-    manifesto: '', // (optional: keep for text)
-    manifestoUrl: '', // <-- Add this for the file URL
+    manifesto: '',
     photoUrl: '',
-    electionId: election.id, // <-- Set default electionId
+    electionId: election.id,
     positionId: '',
   });
-  const [uploading, setUploading] = useState(false);
+  
+  // File preview states
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedManifestoFile, setSelectedManifestoFile] = useState<File | null>(null);
+  const [manifestoPreviewName, setManifestoPreviewName] = useState<string | null>(null);
+  
+  // Upload states
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [manifestoUploading, setManifestoUploading] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const manifestoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       fetchPositions();
       setFormData((prev) => ({
         ...prev,
-        electionId: election.id, // <-- Always set electionId on open
+        electionId: election.id,
       }));
     }
   }, [open, election.id]);
@@ -81,6 +90,86 @@ export default function CreateCandidateDialog({
       }
     } catch (error) {
       console.error('Failed to fetch positions:', error);
+    }
+  };
+
+  // Handle photo file selection for preview
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setSelectedPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  // Handle manifesto file selection for preview
+  const handleManifestoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setSelectedManifestoFile(file);
+    setManifestoPreviewName(file.name);
+  };
+
+  // Upload photo
+  const handlePhotoUpload = async () => {
+    if (!selectedPhotoFile) return;
+    
+    setPhotoUploading(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', selectedPhotoFile);
+    formDataUpload.append('type', 'candidate');
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+      const result = await response.json();
+      
+      if (response.ok && result.url) {
+        setFormData((prev) => ({ ...prev, photoUrl: result.url }));
+        toast.success('Photo uploaded successfully!');
+        setSelectedPhotoFile(null);
+        setPhotoPreview(null);
+      } else {
+        toast.error(result.error || 'Photo upload failed');
+      }
+    } catch (error) {
+      toast.error('Photo upload error');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  // Upload manifesto
+  const handleManifestoUpload = async () => {
+    if (!selectedManifestoFile) return;
+    
+    setManifestoUploading(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', selectedManifestoFile);
+    formDataUpload.append('type', 'manifesto');
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+      const result = await response.json();
+      
+      if (response.ok && result.url) {
+        setFormData((prev) => ({ ...prev, manifesto: result.url }));
+        toast.success('Manifesto uploaded successfully!');
+        setSelectedManifestoFile(null);
+        setManifestoPreviewName(null);
+      } else {
+        toast.error(result.error || 'Manifesto upload failed');
+      }
+    } catch (error) {
+      toast.error('Manifesto upload error');
+    } finally {
+      setManifestoUploading(false);
     }
   };
 
@@ -103,14 +192,20 @@ export default function CreateCandidateDialog({
       if (response.ok && result.status === 'success') {
         toast.success(result.message || 'Candidate created successfully');
         setOpen(false);
+        
+        // Reset all states
         setFormData({
           name: '',
-          manifesto: '', // (optional: keep for text)
-          manifestoUrl: '', // <-- Reset this
+          manifesto: '',
           photoUrl: '',
-          electionId: election.id, // <-- Reset to current election
+          electionId: election.id,
           positionId: '',
         });
+        setSelectedPhotoFile(null);
+        setPhotoPreview(null);
+        setSelectedManifestoFile(null);
+        setManifestoPreviewName(null);
+        
         onCandidateCreated?.();
       } else {
         toast.error(result.message || 'Failed to create candidate');
@@ -119,62 +214,6 @@ export default function CreateCandidateDialog({
       toast.error('Something went wrong');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'candidate');
-    // Optionally, pass candidateId if updating after creation
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, photoUrl: result.url }));
-        toast.success('Image uploaded!');
-      } else {
-        toast.error(result.error || 'Upload failed');
-      }
-    } catch (error) {
-      toast.error('Upload error');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Manifesto upload handler
-  const handleManifestoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setManifestoUploading(true);
-    const formDataUpload = new FormData();
-    formDataUpload.append('file', file);
-    formDataUpload.append('type', 'manifesto');
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataUpload,
-      });
-      const result = await response.json();
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, manifesto: result.url }));
-        toast.success('Manifesto uploaded!');
-      } else {
-        toast.error(result.error || 'Manifesto upload failed');
-      }
-    } catch (error) {
-      toast.error('Manifesto upload error');
-    } finally {
-      setManifestoUploading(false);
     }
   };
 
@@ -192,7 +231,7 @@ export default function CreateCandidateDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Candidate</DialogTitle>
         </DialogHeader>
@@ -247,53 +286,100 @@ export default function CreateCandidateDialog({
             )}
           </div>
 
+          {/* Photo Upload Section */}
           <div>
-            <Label htmlFor="photoUrl" className="mb-2">
-              Photo (Upload)
-            </Label>
+            <Label className="mb-2">Candidate Photo</Label>
             <input
               type="file"
               accept="image/*"
               ref={fileInputRef}
-              onChange={handleImageUpload}
-              disabled={uploading}
-              title="Upload candidate photo"
+              onChange={handlePhotoFileChange}
+              disabled={photoUploading}
+              title="Select candidate photo"
               className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
             />
-            {formData.photoUrl && (
-              <div className="mt-2">
+            
+            {/* Photo Preview */}
+            {photoPreview && (
+              <div className="mt-2 space-y-2">
                 <Image
-                  src={formData.photoUrl}
-                  alt="Candidate Preview"
+                  src={photoPreview}
+                  alt="Photo Preview"
                   width={96}
                   height={96}
                   className="w-24 h-24 object-cover rounded-lg border"
                 />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handlePhotoUpload}
+                  disabled={photoUploading}
+                >
+                  {photoUploading ? 'Uploading...' : 'Upload Photo'}
+                </Button>
+              </div>
+            )}
+            
+            {/* Uploaded Photo */}
+            {formData.photoUrl && !photoPreview && (
+              <div className="mt-2">
+                <Image
+                  src={formData.photoUrl}
+                  alt="Uploaded Photo"
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 object-cover rounded-lg border"
+                />
+                <p className="text-sm text-green-600 mt-1">✓ Photo uploaded</p>
               </div>
             )}
           </div>
 
+          {/* Manifesto Upload Section */}
           <div>
-            <Label htmlFor="manifestoUrl" className="mb-2">
-              Manifesto Document (PDF only)
-            </Label>
+            <Label className="mb-2">Manifesto Document (PDF only)</Label>
             <input
               type="file"
               accept=".pdf"
-              onChange={handleManifestoUpload}
+              ref={manifestoInputRef}
+              onChange={handleManifestoFileChange}
               disabled={manifestoUploading}
-              title="Upload candidate manifesto (PDF only)"
+              title="Select manifesto document (PDF only)"
               className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
             />
-            {formData.manifestoUrl && (
-              <a
-                href={formData.manifestoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline mt-2 block"
-              >
-                View Uploaded Manifesto
-              </a>
+            
+            {/* Manifesto Preview */}
+            {manifestoPreviewName && (
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-red-600" />
+                  <span className="text-sm">{manifestoPreviewName}</span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleManifestoUpload}
+                  disabled={manifestoUploading}
+                >
+                  {manifestoUploading ? 'Uploading...' : 'Upload Manifesto'}
+                </Button>
+              </div>
+            )}
+            
+            {/* Uploaded Manifesto */}
+            {formData.manifesto && !manifestoPreviewName && (
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(formData.manifesto, '_blank')}
+                >
+                  <FileText className="h-4 w-4 mr-2 text-red-600" />
+                  View Uploaded Manifesto
+                </Button>
+                <p className="text-sm text-green-600 mt-1">✓ Manifesto uploaded</p>
+              </div>
             )}
           </div>
 

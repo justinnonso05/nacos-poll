@@ -16,7 +16,7 @@ const updateVoterSchema = z.object({
   regeneratePassword: z.boolean().optional(),
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return fail('Unauthorized', null, 401);
@@ -40,6 +40,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   const { regeneratePassword, ...updateData } = result.data;
 
+  // Await params to get the actual object
+  const { id: voterId } = await params;
+
   // Create update object with proper typing
   const voterUpdateData: Record<string, unknown> = { ...updateData };
 
@@ -50,7 +53,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   const voter = await prisma.voter.update({
     where: {
-      id: params.id,
+      id: voterId,
       associationId: admin.associationId,
     },
     data: voterUpdateData,
@@ -59,7 +62,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return success('Voter updated successfully', voter);
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return fail('Unauthorized', null, 401);
@@ -73,6 +76,9 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   if (!admin) {
     return fail('Admin not found', null, 404);
   }
+
+  // Await params to get the actual object
+  const { id: voterId } = await params;
 
   // Try to parse bulk delete body
   let body: Record<string, unknown> | null = null;
@@ -93,7 +99,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     // Single delete
     await prisma.voter.delete({
       where: {
-        id: params.id,
+        id: voterId,
         associationId: admin.associationId,
       },
     });

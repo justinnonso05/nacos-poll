@@ -38,7 +38,7 @@ interface Admin {
   updatedAt: string;
 }
 
-interface CreatedAdmin {
+export interface AdminCreate {
   id: string;
   email: string;
   role: string;
@@ -50,7 +50,7 @@ export default function ManageAdminsPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [createdAdmin, setCreatedAdmin] = useState<CreatedAdmin | null>(null);
+  const [createdAdmin, setCreatedAdmin] = useState<AdminCreate | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function ManageAdminsPage() {
     }
   };
 
-  const handleAdminCreated = (admin: CreatedAdmin) => {
+  const handleAdminCreated = (admin: AdminCreate) => {
     setCreatedAdmin(admin);
     setCreateDialogOpen(false);
     fetchAdmins();

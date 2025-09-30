@@ -428,30 +428,19 @@ export default function CandidateDetailModal({
                     )}
                   </>
                 ) : candidate.manifesto && candidate.manifesto.startsWith('http') ? (
-                  <div className="flex items-center gap-2 mt-2">
-                    {candidate.manifesto.endsWith('.pdf') ? (
-                      <FileText className="h-5 w-5 text-red-600" />
-                    ) : (
-                      <FileType2 className="h-5 w-5 text-blue-600" />
-                    )}
-                    <span className="text-xs">{candidate.manifesto.split('/').pop()}</span>
+                  <div className="mt-2">
                     <Button
-                      // variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => window.open(candidate.manifesto!, '_blank')}
                       title="View Manifesto"
                     >
+                      <FileText className="h-4 w-4 mr-2 text-red-600" />
                       View Manifesto
                     </Button>
                   </div>
                 ) : (
-                  <Textarea
-                    id="manifesto"
-                    value={formData.manifesto}
-                    disabled
-                    rows={6}
-                    placeholder="No manifesto provided"
-                  />
+                  <p className="text-sm text-muted-foreground mt-2">No manifesto provided</p>
                 )}
               </div>
             </CardContent>

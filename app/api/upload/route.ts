@@ -1,95 +1,87 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import { NextResponse } from 'next/server';
+import cloudinary from '@/lib/cloudinary';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import type { SessionStrategy } from 'next-auth';
-import type { JWT } from 'next-auth/jwt';
-import type { Session } from 'next-auth';
-import type { Account, Profile, User } from 'next-auth';
 
 const prisma = new PrismaClient();
 
-type AuthUser = {
-  id: string;
-  email: string;
-  role: string;
-  associationId: string;
-};
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+export async function POST(req: Request) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+    const type = formData.get('type') as string; // "candidate" or "manifesto"
+    const candidateId = formData.get('candidateId') as string; // for DB update
 
-        const admin = await prisma.admin.findUnique({
-          where: { email: credentials.email },
-        });
-        if (!admin) return null;
+    if (!file) {
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
 
-        const valid = await bcrypt.compare(
-          credentials.password,
-          admin.passwordHash
-        );
-        if (!valid) return null;
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 });
+    }
 
-        return {
-          id: admin.id,
-          email: admin.email,
-          role: admin.role,
-          associationId: admin.associationId,
-        };
-      },
-    }),
-  ],
-  session: {
-    strategy: 'jwt' as SessionStrategy,
-    maxAge: 60 * 60 * 24,
-  },
-  callbacks: {
-    async jwt({
-      token,
-      user,
-    }: {
-      token: JWT;
-      user?: User | AuthUser;
-    }) {
-      if (
-        user &&
-        'id' in user &&
-        'role' in user &&
-        'associationId' in user
-      ) {
-        token.id = user.id;
-        token.role = user.role;
-        token.associationId = user.associationId;
-      }
-      return token;
-    },
-    async session({
-      session,
-      token,
-    }: {
-      session: Session;
-      token: JWT;
-    }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.associationId = token.associationId as string;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: '/admin/login',
-  },
-};
+    // Accept only images and pdf
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        {
+          error:
+            'Only PDF files are allowed for manifesto uploads. Please convert your document to PDF before uploading.',
+        },
+        { status: 415 }
+      );
+    }
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Get original filename and extension
+    const originalFilename = file.name; // e.g., "manifesto.pdf"
+    const extension = originalFilename.split('.').pop(); // "pdf"
+    const publicId = originalFilename.replace(/\.[^/.]+$/, ''); // "manifesto"
+
+    // Upload to Cloudinary with public_id and format
+    const uploadRes = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'evoting',
+          resource_type: file.type.startsWith('image') ? 'image' : 'auto',
+          public_id: publicId,
+          format: extension,
+          timeout: 60000,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(buffer);
+    });
+
+    // @ts-expect-error
+    const secureUrl = uploadRes.secure_url;
+
+    // Save to DB if candidateId provided
+    if (candidateId && type === 'candidate') {
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { photoUrl: secureUrl },
+      });
+    }
+    if (candidateId && type === 'manifesto') {
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { manifesto: secureUrl },
+      });
+    }
+
+    return NextResponse.json({ success: true, url: secureUrl });
+  } catch (error: unknown) {
+    let errorMessage = 'Unknown error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}

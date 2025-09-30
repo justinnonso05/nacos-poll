@@ -3,9 +3,6 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import type { SessionStrategy } from 'next-auth';
-import type { JWT } from 'next-auth/jwt';
-import type { Session } from 'next-auth';
-import type { User } from 'next-auth';
 
 const prisma = new PrismaClient();
 

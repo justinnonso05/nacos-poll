@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { cookies } from 'next/headers';
 import { success, fail } from '@/lib/apiREsponse';
@@ -25,14 +26,15 @@ async function getSessionData() {
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Await params first
+    const { id: electionId } = await params;
+
     const session = await getSessionData();
     if (!session) {
       return fail('Session expired. Please login again.', null, 401);
     }
-
-    const electionId = params.id;
 
     // Verify election belongs to voter's association and is active
     const election = await prisma.election.findFirst({
