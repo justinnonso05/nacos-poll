@@ -24,25 +24,26 @@ import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle } from 'lu
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
-interface PreviewData {
+// Define a type for voter data
+type VoterUploadRow = {
   first_name: string;
   last_name: string;
   email: string;
   level: string;
   studentId: string;
-  [key: string]: any;
-}
+  [key: string]: string;
+};
 
-interface UploadResults {
-  success: any[];
-  failed: Array<{ row: any; error: string }>;
+type UploadResults = {
+  success: VoterUploadRow[];
+  failed: Array<{ row: VoterUploadRow; error: string }>;
   total: number;
-}
+};
 
 export default function VoterUpload() {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [previewData, setPreviewData] = useState<PreviewData[]>([]);
+  const [previewData, setPreviewData] = useState<VoterUploadRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadResults, setUploadResults] = useState<UploadResults | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -62,7 +63,7 @@ export default function VoterUpload() {
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
       // Validate required fields
       if (jsonData.length === 0) {
@@ -70,7 +71,7 @@ export default function VoterUpload() {
         return;
       }
 
-      const firstRow = jsonData[0] as any;
+      const firstRow = jsonData[0];
       const fileFields = Object.keys(firstRow).map((key) => key.toLowerCase().replace(/\s+/g, '_'));
       const missingFields = requiredFields.filter(
         (field) =>
@@ -88,22 +89,26 @@ export default function VoterUpload() {
       }
 
       // Map data to expected format
-      const mappedData = jsonData.map((row: any) => {
-        const mapped: any = {};
+      const mappedData: VoterUploadRow[] = jsonData.map((row) => {
+        const mapped: VoterUploadRow = {
+          first_name: '',
+          last_name: '',
+          email: '',
+          level: '',
+          studentId: '',
+        };
         Object.keys(row).forEach((key) => {
           const normalizedKey = key.toLowerCase().replace(/\s+/g, '_');
           if (normalizedKey.includes('first') && normalizedKey.includes('name')) {
-            mapped.first_name = String(row[key] || '').trim();
+            mapped.first_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
-            mapped.last_name = String(row[key] || '').trim();
+            mapped.last_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] || '')
-              .trim()
-              .toLowerCase();
+            mapped.email = String(row[key] ?? '').trim().toLowerCase();
           } else if (normalizedKey.includes('level')) {
-            mapped.level = String(row[key] || '').trim();
+            mapped.level = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {
-            mapped.studentId = String(row[key] || '').trim();
+            mapped.studentId = String(row[key] ?? '').trim();
           }
         });
         return mapped;
@@ -111,7 +116,7 @@ export default function VoterUpload() {
 
       setPreviewData(mappedData.slice(0, 5));
       setValidationErrors([]);
-    } catch (error) {
+    } catch {
       setValidationErrors(["Error reading file. Please ensure it's a valid CSV or Excel file."]);
     }
   };
@@ -124,25 +129,29 @@ export default function VoterUpload() {
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
       // Map all data
-      const mappedData = jsonData.map((row: any) => {
-        const mapped: any = {};
+      const mappedData: VoterUploadRow[] = jsonData.map((row) => {
+        const mapped: VoterUploadRow = {
+          first_name: '',
+          last_name: '',
+          email: '',
+          level: '',
+          studentId: '',
+        };
         Object.keys(row).forEach((key) => {
           const normalizedKey = key.toLowerCase().replace(/\s+/g, '_');
           if (normalizedKey.includes('first') && normalizedKey.includes('name')) {
-            mapped.first_name = String(row[key] || '').trim();
+            mapped.first_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
-            mapped.last_name = String(row[key] || '').trim();
+            mapped.last_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] || '')
-              .trim()
-              .toLowerCase();
+            mapped.email = String(row[key] ?? '').trim().toLowerCase();
           } else if (normalizedKey.includes('level')) {
-            mapped.level = String(row[key] || '').trim();
+            mapped.level = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {
-            mapped.studentId = String(row[key] || '').trim();
+            mapped.studentId = String(row[key] ?? '').trim();
           }
         });
         return mapped;
@@ -157,7 +166,7 @@ export default function VoterUpload() {
       const apiResponse = await response.json();
 
       // Extract the actual results from the standardized response format
-      const results = apiResponse.data || apiResponse;
+      const results: UploadResults = apiResponse.data || apiResponse;
       setUploadResults(results);
 
       if (results.success?.length > 0) {
@@ -166,7 +175,7 @@ export default function VoterUpload() {
       if (results.failed?.length > 0) {
         toast.warning(`${results.failed.length} voters failed to upload`);
       }
-    } catch (error) {
+    } catch {
       toast.error('Upload failed');
     } finally {
       setLoading(false);

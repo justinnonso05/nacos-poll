@@ -9,10 +9,11 @@ import AdminProfileSection from '@/components/admin/settings/AdminProfileSection
 import AssociationSection from '@/components/admin/settings/AssociationSection';
 import DataExportSection from '@/components/admin/settings/DataExportSection';
 import DangerZoneSection from '@/components/admin/settings/DangerZoneSection';
+import type { Election } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-function calculateElectionStatus(election: any) {
+function calculateElectionStatus(election: Election | null) {
   if (!election) return 'NO_ELECTION';
 
   const now = new Date();

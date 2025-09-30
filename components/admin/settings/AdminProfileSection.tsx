@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Admin } from '@prisma/client'; // Add this import
 
 interface AdminProfileSectionProps {
-  admin: any;
+  admin: Admin;
 }
 
 export default function AdminProfileSection({ admin }: AdminProfileSectionProps) {
@@ -31,7 +32,7 @@ export default function AdminProfileSection({ admin }: AdminProfileSectionProps)
     setLoading(true);
     try {
       // Only include fields that have values
-      const payload: any = { email: formData.email };
+      const payload: { email: string; newPassword?: string; confirmPassword?: string; currentPassword?: string } = { email: formData.email };
       if (formData.newPassword) {
         payload.newPassword = formData.newPassword;
         payload.confirmPassword = formData.confirmPassword;
@@ -56,7 +57,7 @@ export default function AdminProfileSection({ admin }: AdminProfileSectionProps)
       } else {
         toast.error('Failed to update profile');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setLoading(false);

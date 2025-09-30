@@ -3,12 +3,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateVoterPassword } from '@/lib/utils/password';
 import { success, fail } from '@/lib/apiREsponse';
+import type { Voter } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+
 interface UploadResults {
-  success: any[];
-  failed: Array<{ row: any; error: string }>;
+  success: Voter[];
+  failed: Array<{ row: Record<string, unknown>; error: string }>;
   total: number;
 }
 

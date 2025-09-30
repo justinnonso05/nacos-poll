@@ -41,7 +41,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const { regeneratePassword, ...updateData } = result.data;
 
   // Create update object with proper typing
-  const voterUpdateData: any = { ...updateData };
+  const voterUpdateData: Record<string, unknown> = { ...updateData };
 
   // Add new password if regenerating
   if (regeneratePassword) {
@@ -75,7 +75,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 
   // Try to parse bulk delete body
-  let body: any = null;
+  let body: Record<string, unknown> | null = null;
   try {
     body = await req.json();
   } catch {}

@@ -8,9 +8,19 @@ import { Calendar, Users, Vote, Eye, Plus, Play, Pause, Square, Clock } from 'lu
 import CreateElectionDialog from './CreateElectionDialog';
 import ElectionDetailsModal from './ElectionDetailsModal';
 import { toast } from 'sonner';
+import type { Election } from '@prisma/client';
+
+// Extend Election type to include _count and positions if needed
+type ElectionWithCounts = Election & {
+  _count?: {
+    candidates?: number;
+    votes?: number;
+  };
+  positions?: unknown[];
+};
 
 interface ElectionManagementSectionProps {
-  election: any;
+  election: ElectionWithCounts | null;
   status: string;
   associationId: string;
   isSuper: boolean;
@@ -49,8 +59,10 @@ export default function ElectionManagementSection({
     }
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
+  // Accept Date or string for formatting
+  const formatDateTime = (date: Date | string) => {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -101,7 +113,7 @@ export default function ElectionManagementSection({
       } else {
         toast.error(result.error || 'Failed to update election');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setLoading(false);
@@ -109,7 +121,6 @@ export default function ElectionManagementSection({
   };
 
   const handleElectionUpdate = () => {
-    // Refresh the page to show updated data
     window.location.reload();
   };
 

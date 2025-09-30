@@ -1,14 +1,23 @@
-import NextAuth from 'next-auth';
+import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import type { SessionStrategy } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import type { Session } from 'next-auth';
+import type { User } from 'next-auth';
 
 const prisma = new PrismaClient();
 
-export const authOptions = {
+// Define custom user type for your app
+type AuthUser = {
+  id: string;
+  email: string;
+  role: string;
+  associationId: string;
+};
+
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -16,14 +25,18 @@ export const authOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<AuthUser | null> {
         if (!credentials?.email || !credentials?.password) return null;
+
         const admin = await prisma.admin.findUnique({
           where: { email: credentials.email },
         });
+
         if (!admin) return null;
+
         const valid = await bcrypt.compare(credentials.password, admin.passwordHash);
         if (!valid) return null;
+
         return {
           id: admin.id,
           email: admin.email,
@@ -34,21 +47,19 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: 'jwt' as SessionStrategy, // <-- Type annotation added here
+    strategy: 'jwt' as SessionStrategy,
     maxAge: 60 * 60 * 24,
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: any }) {
-      // <-- Type annotation added here
-      if (user) {
+    async jwt({ token, user }) {
+      if (user && 'id' in user && 'role' in user && 'associationId' in user) {
         token.id = user.id;
         token.role = user.role;
         token.associationId = user.associationId;
       }
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      // <-- Type annotation added here
+    async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;

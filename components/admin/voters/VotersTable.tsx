@@ -23,16 +23,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import VoterDetailModal from './VoterDetailModal';
 import { toast } from 'sonner';
+import type { Voter } from '@prisma/client'; // Add this import
 
 interface VotersTableProps {
-  voters: any[];
+  voters: Voter[];
 }
 
 export default function VotersTable({ voters: initialVoters }: VotersTableProps) {
-  const [voters, setVoters] = useState(initialVoters);
+  const [voters, setVoters] = useState<Voter[]>(initialVoters);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVoters, setSelectedVoters] = useState<string[]>([]);
-  const [selectedVoter, setSelectedVoter] = useState<any>(null);
+  const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Pagination state
@@ -77,7 +78,7 @@ export default function VotersTable({ voters: initialVoters }: VotersTableProps)
     }
   };
 
-  const handleViewVoter = (voter: any) => {
+  const handleViewVoter = (voter: Voter) => {
     setSelectedVoter(voter);
     setShowDetailModal(true);
   };

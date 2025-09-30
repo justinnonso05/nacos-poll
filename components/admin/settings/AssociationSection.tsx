@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Edit, Save, X, Building } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import type { Association } from '@prisma/client';
 
 interface AssociationSectionProps {
-  association: any;
+  association: Association;
 }
 
 export default function AssociationSection({ association }: AssociationSectionProps) {

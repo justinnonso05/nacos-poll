@@ -13,9 +13,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, AlertTriangle, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Election } from '@prisma/client';
+
+// Extend Election type to include _count if needed
+type ElectionWithCounts = Election & {
+  _count?: {
+    candidates?: number;
+    votes?: number;
+  };
+};
 
 interface DangerZoneSectionProps {
-  election: any;
+  election: ElectionWithCounts;
 }
 
 export default function DangerZoneSection({ election }: DangerZoneSectionProps) {
@@ -61,7 +70,7 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
       } else {
         toast.error('Failed to delete election');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setLoading(false);
@@ -100,7 +109,7 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
           <DialogHeader>
             <DialogTitle className="text-destructive">Delete Election</DialogTitle>
             <DialogDescription>
-              You are about to permanently delete "{election.title}" and all associated data.
+              You are about to permanently delete &quot;{election.title}&quot; and all associated data.
             </DialogDescription>
           </DialogHeader>
 

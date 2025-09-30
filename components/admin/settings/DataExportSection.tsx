@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, FileText, Users, Vote } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Election } from '@prisma/client';
 
 interface DataExportSectionProps {
-  election: any;
+  election: Election;
   voterCount: number;
 }
 

@@ -9,12 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit, Save, X, RefreshCw, Mail, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Voter } from '@prisma/client'; // Add this import
 
 interface VoterDetailModalProps {
-  voter: any;
+  voter: Voter | null;
   open: boolean;
   onClose: () => void;
-  onUpdate: (voter: any) => void;
+  onUpdate: (voter: Voter) => void;
 }
 
 export default function VoterDetailModal({

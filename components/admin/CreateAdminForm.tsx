@@ -12,9 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import type { Admin } from '@prisma/client';
 
 interface CreateAdminFormProps {
-  onSuccess: (admin: any) => void;
+  onSuccess: (admin: Admin) => void;
 }
 
 export function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {

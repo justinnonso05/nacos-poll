@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { success, fail } from '@/lib/apiREsponse';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -33,7 +34,7 @@ export async function GET(req: Request) {
       return fail('Admin not found', null, 404);
     }
 
-    const whereClause: any = {
+    const whereClause: Prisma.CandidateWhereInput = {
       election: {
         associationId: admin.associationId,
       },
