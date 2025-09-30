@@ -1,41 +1,38 @@
-import { PrismaClient } from "@prisma/client"
-import { cookies } from "next/headers"
-import { success, fail } from "@/lib/apiREsponse"
+import { PrismaClient } from '@prisma/client';
+import { cookies } from 'next/headers';
+import { success, fail } from '@/lib/apiREsponse';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function getSessionData() {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('voter-session')?.value
-  if (!sessionCookie) return null
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('voter-session')?.value;
+  if (!sessionCookie) return null;
 
   try {
-    const sessionData = JSON.parse(sessionCookie)
-    
+    const sessionData = JSON.parse(sessionCookie);
+
     // Check if session has expired
     if (Date.now() - sessionData.loginTime > 900000) {
-      cookieStore.delete('voter-session')
-      return null
+      cookieStore.delete('voter-session');
+      return null;
     }
 
-    return sessionData
+    return sessionData;
   } catch (error) {
-    cookieStore.delete('voter-session')
-    return null
+    cookieStore.delete('voter-session');
+    return null;
   }
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getSessionData()
+    const session = await getSessionData();
     if (!session) {
-      return fail("Session expired. Please login again.", null, 401)
+      return fail('Session expired. Please login again.', null, 401);
     }
 
-    const electionId = params.id
+    const electionId = params.id;
 
     // Verify election belongs to voter's association and is active
     const election = await prisma.election.findFirst({
@@ -44,12 +41,12 @@ export async function GET(
         associationId: session.associationId,
         isActive: true,
         startAt: { lte: new Date() },
-        endAt: { gte: new Date() }
-      }
-    })
+        endAt: { gte: new Date() },
+      },
+    });
 
     if (!election) {
-      return fail("Election not found, not active, or has ended.", null, 404)
+      return fail('Election not found, not active, or has ended.', null, 404);
     }
 
     // Get positions with candidates for this specific election
@@ -60,26 +57,26 @@ export async function GET(
       include: {
         candidates: {
           where: {
-            electionId: electionId
+            electionId: electionId,
           },
           select: {
             id: true,
             name: true,
             manifesto: true,
-            photoUrl: true
+            photoUrl: true,
           },
-          orderBy: { name: 'asc' }
-        }
+          orderBy: { name: 'asc' },
+        },
       },
-      orderBy: { order: 'asc' }
-    })
+      orderBy: { order: 'asc' },
+    });
 
     // Filter out positions with no candidates (optional - you can keep them if you want to show empty positions)
-    const positionsWithCandidates = positions.filter(position => position.candidates.length > 0)
+    const positionsWithCandidates = positions.filter((position) => position.candidates.length > 0);
 
-    return success("Positions with candidates retrieved", positionsWithCandidates)
+    return success('Positions with candidates retrieved', positionsWithCandidates);
   } catch (error) {
-    console.error("Get positions error:", error)
-    return fail("Internal server error", null, 500)
+    console.error('Get positions error:', error);
+    return fail('Internal server error', null, 500);
   }
 }

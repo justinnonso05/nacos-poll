@@ -1,16 +1,46 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Edit, Trash2, MoreHorizontal, Eye, Vote, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Search,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Eye,
+  Vote,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  FileText,
+  FileType2,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -18,150 +48,177 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import CreateCandidateDialog from "./CreateCandidateDialog"
-import CandidateDetailModal from "./CandidateDetailModal"
+} from '@/components/ui/dialog';
+import CreateCandidateDialog from './CreateCandidateDialog';
+import CandidateDetailModal from './CandidateDetailModal';
 
 interface Candidate {
-  id: string
-  name: string
-  manifesto: string | null
-  photoUrl: string | null
+  id: string;
+  name: string;
+  manifesto: string | null;
+  photoUrl: string | null;
   election: {
-    id: string
-    title: string
-    startAt: string    
-    endAt: string      
-    isActive: boolean
-  }
+    id: string;
+    title: string;
+    startAt: string;
+    endAt: string;
+    isActive: boolean;
+  };
   position: {
-    id: string
-    name: string
-    order: number
-  }
+    id: string;
+    name: string;
+    order: number;
+  };
   _count: {
-    votes: number
-  }
+    votes: number;
+  };
 }
 
 interface Election {
-  id: string
-  title: string
+  id: string;
+  title: string;
 }
 
 interface Position {
-  id: string
-  name: string
-  order: number
+  id: string;
+  name: string;
+  order: number;
 }
 
 interface CandidatesTableProps {
-  candidates: Candidate[]
-  elections: Election[]
-  positions: Position[]
+  candidates: Candidate[];
+  elections: Election[];
+  positions: Position[];
 }
 
-export default function CandidatesTable({ candidates: initialCandidates, elections, positions }: CandidatesTableProps) {
-  const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedElection, setSelectedElection] = useState<string>('all')
-  const [loading, setLoading] = useState(false)
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
-  const [showDetailModal, setShowDetailModal] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null)
-  
+export default function CandidatesTable({
+  candidates: initialCandidates,
+  elections,
+  positions,
+}: CandidatesTableProps) {
+  const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedElection, setSelectedElection] = useState<string>('all');
+  const [loading, setLoading] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
+
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Filter candidates
-  const filteredCandidates = candidates.filter(candidate => {
-    const matchesSearch = candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         candidate.position.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         candidate.election.title.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesElection = selectedElection === 'all' || candidate.election.id === selectedElection
+  const filteredCandidates = candidates.filter((candidate) => {
+    const matchesSearch =
+      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate.position.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate.election.title.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesElection
-  })
+    const matchesElection =
+      selectedElection === 'all' || candidate.election.id === selectedElection;
+
+    return matchesSearch && matchesElection;
+  });
 
   // Pagination
-  const totalPages = Math.ceil(filteredCandidates.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentCandidates = filteredCandidates.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(filteredCandidates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCandidates = filteredCandidates.slice(startIndex, startIndex + itemsPerPage);
 
   // Reset page when filters change
   useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm, selectedElection])
+    setCurrentPage(1);
+  }, [searchTerm, selectedElection]);
 
   const fetchCandidates = async (electionId?: string) => {
     try {
-      const url = electionId ? `/api/candidates?electionId=${electionId}` : '/api/candidates'
-      const response = await fetch(url)
-      const result = await response.json()
-      
+      const url = electionId ? `/api/candidates?electionId=${electionId}` : '/api/candidates';
+      const response = await fetch(url);
+      const result = await response.json();
+
       if (response.ok && result.status === 'success') {
-        setCandidates(result.data)
+        setCandidates(result.data);
       }
     } catch (error) {
-      console.error('Failed to fetch candidates:', error)
+      console.error('Failed to fetch candidates:', error);
     }
-  }
+  };
 
   const handleViewCandidate = (candidate: Candidate) => {
-    setSelectedCandidate(candidate)
-    setShowDetailModal(true)
-  }
+    setSelectedCandidate(candidate);
+    setShowDetailModal(true);
+  };
 
   const handleUpdateCandidate = (updatedCandidate: Candidate) => {
-    setCandidates(prev => 
-      prev.map(c => c.id === updatedCandidate.id ? updatedCandidate : c)
-    )
-  }
+    setCandidates((prev) => prev.map((c) => (c.id === updatedCandidate.id ? updatedCandidate : c)));
+  };
 
   const handleDeleteClick = (candidate: Candidate) => {
-    setCandidateToDelete(candidate)
-    setShowDeleteDialog(true)
-  }
+    setCandidateToDelete(candidate);
+    setShowDeleteDialog(true);
+  };
 
   const handleDeleteCandidate = async () => {
-    if (!candidateToDelete) return
+    if (!candidateToDelete) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`/api/candidates/${candidateToDelete.id}`, {
-        method: 'DELETE'
-      })
+        method: 'DELETE',
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        toast.success('Candidate deleted successfully')
-        setCandidates(prev => prev.filter(c => c.id !== candidateToDelete.id))
-        setShowDeleteDialog(false)
-        setCandidateToDelete(null)
+        toast.success('Candidate deleted successfully');
+        setCandidates((prev) => prev.filter((c) => c.id !== candidateToDelete.id));
+        setShowDeleteDialog(false);
+        setCandidateToDelete(null);
       } else {
-        toast.error(result.message || 'Failed to delete candidate')
+        toast.error(result.message || 'Failed to delete candidate');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2)
-  }
+      .slice(0, 2);
+  };
 
-  const canDeleteCandidate = candidateToDelete && candidateToDelete._count.votes === 0
+  const canDeleteCandidate = candidateToDelete && candidateToDelete._count.votes === 0;
+
+  // Always get the first election, if any
+  const currentElection = elections.length > 0 ? elections[0] : null;
+
+  // State for manifesto preview modal
+  const [showManifestoModal, setShowManifestoModal] = useState(false);
+  const [manifestoUrl, setManifestoUrl] = useState<string | null>(null);
+
+  // "Warm up" the manifesto file before showing the iframe
+  useEffect(() => {
+    if (showManifestoModal && manifestoUrl && manifestoUrl.startsWith('http')) {
+      fetch(manifestoUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+    }
+  }, [showManifestoModal, manifestoUrl]);
+
+  // Helper to get file type icon
+  const getManifestoIcon = (url: string) => {
+    if (!url) return null;
+    if (url.endsWith('.pdf')) return <FileText className="h-5 w-5 text-red-600" />;
+    if (url.endsWith('.doc') || url.endsWith('.docx'))
+      return <FileType2 className="h-5 w-5 text-blue-600" />;
+    return <FileText className="h-5 w-5 text-muted-foreground" />;
+  };
 
   return (
     <>
@@ -169,10 +226,14 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>All Candidates ({filteredCandidates.length})</CardTitle>
-            <CreateCandidateDialog 
-              elections={elections} 
-              onCandidateCreated={() => fetchCandidates()} 
-            />
+            {currentElection ? (
+              <CreateCandidateDialog
+                election={currentElection}
+                onCandidateCreated={() => fetchCandidates(currentElection.id)}
+              />
+            ) : (
+              <span className="text-muted-foreground text-sm">No election available</span>
+            )}
           </div>
         </CardHeader>
 
@@ -205,70 +266,83 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
               {currentCandidates
                 .sort((a, b) => a.position.order - b.position.order)
                 .map((candidate) => (
-                <TableRow key={candidate.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage 
-                          src={candidate.photoUrl || undefined}
-                          alt={candidate.name}
-                        />
-                        <AvatarFallback>
-                          {getInitials(candidate.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="font-medium">{candidate.name}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{candidate.position.name}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Vote className="h-4 w-4 text-muted-foreground" />
-                      <span>{candidate._count.votes}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-muted-foreground max-w-xs truncate">
-                      {candidate.manifesto || 'No manifesto provided'}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" disabled={loading}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Candidate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteClick(candidate)}
-                          className="text-destructive"
+                  <TableRow key={candidate.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={candidate.photoUrl || undefined} alt={candidate.name} />
+                          <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="font-medium">{candidate.name}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{candidate.position.name}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Vote className="h-4 w-4 text-muted-foreground" />
+                        <span>{candidate._count.votes}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {candidate.manifesto && candidate.manifesto.startsWith('http') ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center gap-2"
+                          onClick={() => {
+                            setManifestoUrl(candidate.manifesto);
+                            setShowManifestoModal(true);
+                          }}
+                          title="View Manifesto"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                          {getManifestoIcon(candidate.manifesto)}
+                          <span className="sr-only">View Manifesto</span>
+                        </Button>
+                      ) : (
+                        <div className="text-sm text-muted-foreground max-w-xs truncate">
+                          {candidate.manifesto || 'No manifesto provided'}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" disabled={loading}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Candidate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(candidate)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
 
           {currentCandidates.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm || selectedElection !== 'all' ? 'No candidates found matching your criteria' : 'No candidates found'}
+                {searchTerm || selectedElection !== 'all'
+                  ? 'No candidates found matching your criteria'
+                  : 'No candidates found'}
               </p>
             </div>
           )}
@@ -277,28 +351,30 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCandidates.length)} of {filteredCandidates.length} candidates
+                Showing {startIndex + 1}-
+                {Math.min(startIndex + itemsPerPage, filteredCandidates.length)} of{' '}
+                {filteredCandidates.length} candidates
               </div>
 
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
                 </Button>
-                
+
                 <span className="text-sm">
                   Page {currentPage} of {totalPages}
                 </span>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
                   Next
@@ -330,35 +406,38 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
             <DialogDescription>
               {canDeleteCandidate ? (
                 <>
-                  Are you sure you want to delete <strong>{candidateToDelete?.name}</strong>? 
-                  This action cannot be undone.
+                  Are you sure you want to delete <strong>{candidateToDelete?.name}</strong>? This
+                  action cannot be undone.
                 </>
               ) : (
                 <>
-                  Cannot delete <strong>{candidateToDelete?.name}</strong> because they have received{' '}
-                  <strong>{candidateToDelete?._count.votes} vote{candidateToDelete?._count.votes !== 1 ? 's' : ''}</strong>.
-                  <br /><br />
-                  Candidates who have received votes cannot be deleted to maintain election integrity.
+                  Cannot delete <strong>{candidateToDelete?.name}</strong> because they have
+                  received{' '}
+                  <strong>
+                    {candidateToDelete?._count.votes} vote
+                    {candidateToDelete?._count.votes !== 1 ? 's' : ''}
+                  </strong>
+                  .
+                  <br />
+                  <br />
+                  Candidates who have received votes cannot be deleted to maintain election
+                  integrity.
                 </>
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
-                setShowDeleteDialog(false)
-                setCandidateToDelete(null)
+                setShowDeleteDialog(false);
+                setCandidateToDelete(null);
               }}
             >
               Cancel
             </Button>
             {canDeleteCandidate && (
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteCandidate}
-                disabled={loading}
-              >
+              <Button variant="destructive" onClick={handleDeleteCandidate} disabled={loading}>
                 {loading ? 'Deleting...' : 'Delete Candidate'}
               </Button>
             )}
@@ -374,6 +453,27 @@ export default function CandidatesTable({ candidates: initialCandidates, electio
         onUpdate={handleUpdateCandidate}
         positions={positions}
       />
+
+      {/* Manifesto Preview Modal */}
+      <Dialog open={showManifestoModal} onOpenChange={setShowManifestoModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manifesto Preview</DialogTitle>
+          </DialogHeader>
+          {manifestoUrl ? (
+            <iframe
+              src={`https://docs.google.com/gview?url=${encodeURIComponent(manifestoUrl)}&embedded=true`}
+              width="100%"
+              height="600px"
+              frameBorder="0"
+              title="Manifesto Preview"
+              className="rounded border"
+            />
+          ) : (
+            <div className="text-muted-foreground text-center py-8">No manifesto available</div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
-  )
+  );
 }

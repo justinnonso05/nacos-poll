@@ -30,7 +30,7 @@
 //     const loadingToast = toast.loading("Processing your vote...", {
 //       description: "Please wait while we securely record your ballot."
 //     })
-    
+
 //     // Simulate processing time
 //     setTimeout(() => {
 //       toast.dismiss(loadingToast)
@@ -47,7 +47,7 @@
 //             <h4 className="font-semibold">Welcome to NACOS Platform!</h4>
 //             <p className="text-sm opacity-90">Your secure e-voting experience starts here.</p>
 //           </div>
-//           <button 
+//           <button
 //             onClick={() => toast.dismiss(t)}
 //             className="ml-auto text-white/80 hover:text-white"
 //           >

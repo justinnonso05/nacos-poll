@@ -1,45 +1,53 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, Users, Vote, Eye, Plus, Play, Pause, Square, Clock } from "lucide-react"
-import CreateElectionDialog from "./CreateElectionDialog"
-import ElectionDetailsModal from "./ElectionDetailsModal"
-import { toast } from "sonner"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calendar, Users, Vote, Eye, Plus, Play, Pause, Square, Clock } from 'lucide-react';
+import CreateElectionDialog from './CreateElectionDialog';
+import ElectionDetailsModal from './ElectionDetailsModal';
+import { toast } from 'sonner';
 
 interface ElectionManagementSectionProps {
-  election: any
-  status: string
-  associationId: string
-  isSuper: boolean
+  election: any;
+  status: string;
+  associationId: string;
+  isSuper: boolean;
 }
 
-export default function ElectionManagementSection({ 
-  election, 
-  status, 
-  associationId, 
-  isSuper 
+export default function ElectionManagementSection({
+  election,
+  status,
+  associationId,
+  isSuper,
 }: ElectionManagementSectionProps) {
-  const [loading, setLoading] = useState(false)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const getStatusBadge = () => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200">Active</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200">
+            Active
+          </Badge>
+        );
       case 'PAUSED':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-200">Paused</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-200">
+            Paused
+          </Badge>
+        );
       case 'NOT_STARTED':
-        return <Badge variant="outline">Not Started</Badge>
+        return <Badge variant="outline">Not Started</Badge>;
       case 'ENDED':
-        return <Badge variant="destructive">Ended</Badge>
+        return <Badge variant="destructive">Ended</Badge>;
       default:
-        return <Badge variant="outline">No Election</Badge>
+        return <Badge variant="outline">No Election</Badge>;
     }
-  }
+  };
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
@@ -48,62 +56,62 @@ export default function ElectionManagementSection({
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
-    })
-  }
+      hour12: true,
+    });
+  };
 
   const getTimeStatus = () => {
-    if (!election) return null
-    
-    const now = new Date()
-    const start = new Date(election.startAt)
-    const end = new Date(election.endAt)
-    
+    if (!election) return null;
+
+    const now = new Date();
+    const start = new Date(election.startAt);
+    const end = new Date(election.endAt);
+
     if (now < start) {
-      const timeUntilStart = start.getTime() - now.getTime()
-      const hoursUntilStart = Math.ceil(timeUntilStart / (1000 * 60 * 60))
-      return { type: 'upcoming', message: `Starts in ${hoursUntilStart} hours` }
+      const timeUntilStart = start.getTime() - now.getTime();
+      const hoursUntilStart = Math.ceil(timeUntilStart / (1000 * 60 * 60));
+      return { type: 'upcoming', message: `Starts in ${hoursUntilStart} hours` };
     }
-    
+
     if (now > end) {
-      return { type: 'ended', message: 'Election has ended' }
+      return { type: 'ended', message: 'Election has ended' };
     }
-    
-    const timeUntilEnd = end.getTime() - now.getTime()
-    const hoursUntilEnd = Math.ceil(timeUntilEnd / (1000 * 60 * 60))
-    return { type: 'active', message: `Ends in ${hoursUntilEnd} hours` }
-  }
+
+    const timeUntilEnd = end.getTime() - now.getTime();
+    const hoursUntilEnd = Math.ceil(timeUntilEnd / (1000 * 60 * 60));
+    return { type: 'active', message: `Ends in ${hoursUntilEnd} hours` };
+  };
 
   const handleElectionAction = async (action: 'start' | 'pause' | 'end') => {
-    if (!election) return
-    
-    setLoading(true)
+    if (!election) return;
+
+    setLoading(true);
     try {
       const response = await fetch(`/api/election/${election.id}/control`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
-      })
+        body: JSON.stringify({ action }),
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok) {
-        toast.success(result.message)
-        window.location.reload()
+        toast.success(result.message);
+        window.location.reload();
       } else {
-        toast.error(result.error || 'Failed to update election')
+        toast.error(result.error || 'Failed to update election');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleElectionUpdate = () => {
     // Refresh the page to show updated data
-    window.location.reload()
-  }
+    window.location.reload();
+  };
 
   if (!election) {
     return (
@@ -119,16 +127,16 @@ export default function ElectionManagementSection({
             Create Election
           </Button>
         )}
-        <CreateElectionDialog 
+        <CreateElectionDialog
           open={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
           associationId={associationId}
         />
       </div>
-    )
+    );
   }
 
-  const timeStatus = getTimeStatus()
+  const timeStatus = getTimeStatus();
 
   return (
     <div className="space-y-4">
@@ -137,22 +145,26 @@ export default function ElectionManagementSection({
         <div className="flex-1">
           <h3 className="text-lg font-medium text-foreground">{election.title}</h3>
           <p className="text-muted-foreground mb-3">{election.description}</p>
-          
+
           {/* Time Status with Schedule */}
           <div className="space-y-2">
             {timeStatus && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className={`font-medium ${
-                  timeStatus.type === 'active' ? 'text-green-600 dark:text-green-400' :
-                  timeStatus.type === 'upcoming' ? 'text-blue-600 dark:text-blue-400' :
-                  'text-red-600 dark:text-red-400'
-                }`}>
+                <span
+                  className={`font-medium ${
+                    timeStatus.type === 'active'
+                      ? 'text-green-600 dark:text-green-400'
+                      : timeStatus.type === 'upcoming'
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-red-600 dark:text-red-400'
+                  }`}
+                >
                   {timeStatus.message}
                 </span>
               </div>
             )}
-            
+
             <div className="text-sm text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
                 <span className="min-w-[60px]">Start:</span>
@@ -170,17 +182,21 @@ export default function ElectionManagementSection({
 
       {/* Election Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card>
+        <Card className="shadow-none">
           <CardContent className="p-4 text-center">
             <Calendar className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Duration</p>
             <p className="font-medium text-foreground">
-              {Math.ceil((new Date(election.endAt).getTime() - new Date(election.startAt).getTime()) / (1000 * 60 * 60))} hours
+              {Math.ceil(
+                (new Date(election.endAt).getTime() - new Date(election.startAt).getTime()) /
+                  (1000 * 60 * 60)
+              )}{' '}
+              hours
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-none">
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Candidates</p>
@@ -188,7 +204,7 @@ export default function ElectionManagementSection({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-none">
           <CardContent className="p-4 text-center">
             <Vote className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Total Votes</p>
@@ -207,7 +223,7 @@ export default function ElectionManagementSection({
         {/* Election Control Buttons */}
         <div className="flex gap-2">
           {(status === 'NOT_STARTED' || status === 'PAUSED') && (
-            <Button 
+            <Button
               onClick={() => handleElectionAction('start')}
               disabled={loading}
               variant="default"
@@ -219,7 +235,7 @@ export default function ElectionManagementSection({
 
           {status === 'ACTIVE' && (
             <>
-              <Button 
+              <Button
                 onClick={() => handleElectionAction('pause')}
                 disabled={loading}
                 variant="secondary"
@@ -228,7 +244,7 @@ export default function ElectionManagementSection({
                 Pause Election
               </Button>
 
-              <Button 
+              <Button
                 onClick={() => handleElectionAction('end')}
                 disabled={loading}
                 variant="destructive"
@@ -258,5 +274,5 @@ export default function ElectionManagementSection({
         onUpdate={handleElectionUpdate}
       />
     </div>
-  )
+  );
 }

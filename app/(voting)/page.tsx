@@ -1,27 +1,27 @@
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
-import VoterLogin from "@/components/voting/VoterLogin"
-import VotingInterface from "@/components/voting/VotingInterface"
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { PrismaClient } from '@prisma/client';
+import VoterLogin from '@/components/voting/VoterLogin';
+import VotingInterface from '@/components/voting/VotingInterface';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function getVoterSession() {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('voter-session')?.value
-  if (!sessionCookie) return null
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('voter-session')?.value;
+  if (!sessionCookie) return null;
 
   try {
-    const sessionData = JSON.parse(sessionCookie)
-    
+    const sessionData = JSON.parse(sessionCookie);
+
     // Check if session has expired (15 minutes)
     if (Date.now() - sessionData.loginTime > 900000) {
-      return null
+      return null;
     }
 
-    return sessionData
+    return sessionData;
   } catch (error) {
-    return null
+    return null;
   }
 }
 
@@ -32,19 +32,19 @@ async function getActiveElectionData(associationId: string) {
       associationId: associationId,
       isActive: true,
       startAt: { lte: new Date() },
-      endAt: { gte: new Date() }
+      endAt: { gte: new Date() },
     },
     include: {
       association: {
         select: {
           name: true,
-          logoUrl: true
-        }
-      }
-    }
-  })
+          logoUrl: true,
+        },
+      },
+    },
+  });
 
-  if (!election) return null
+  if (!election) return null;
 
   return {
     id: election.id,
@@ -52,8 +52,8 @@ async function getActiveElectionData(associationId: string) {
     description: election.description,
     startAt: election.startAt.toISOString(),
     endAt: election.endAt.toISOString(),
-    association: election.association
-  }
+    association: election.association,
+  };
 }
 
 async function getElectionPositions(electionId: string, associationId: string) {
@@ -64,30 +64,30 @@ async function getElectionPositions(electionId: string, associationId: string) {
     include: {
       candidates: {
         where: {
-          electionId: electionId
+          electionId: electionId,
         },
         select: {
           id: true,
           name: true,
           manifesto: true,
-          photoUrl: true
+          photoUrl: true,
         },
-        orderBy: { name: 'asc' }
-      }
+        orderBy: { name: 'asc' },
+      },
     },
-    orderBy: { order: 'asc' }
-  })
+    orderBy: { order: 'asc' },
+  });
 
   // Filter out positions with no candidates
-  return positions.filter(position => position.candidates.length > 0)
+  return positions.filter((position) => position.candidates.length > 0);
 }
 
 export default async function VotingPage() {
-  const session = await getVoterSession()
+  const session = await getVoterSession();
 
   // If not logged in, show login form
   if (!session) {
-    return <VoterLogin />
+    return <VoterLogin />;
   }
 
   // Check if voter exists and hasn't voted
@@ -95,17 +95,17 @@ export default async function VotingPage() {
     where: { id: session.id },
     include: {
       association: {
-        select: { 
+        select: {
           name: true,
-          logoUrl: true 
-        }
-      }
-    }
-  })
+          logoUrl: true,
+        },
+      },
+    },
+  });
 
   if (!voter) {
     // Invalid session, redirect to logout
-    redirect('/logout')
+    redirect('/logout');
   }
 
   // If voter has already voted, show thank you message
@@ -115,25 +115,33 @@ export default async function VotingPage() {
         <div className="text-center max-w-md bg-card rounded-lg border border-border p-6 shadow-sm">
           <div className="w-16 h-16 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Vote Submitted!</h1>
           <p className="text-muted-foreground mb-6 text-sm sm:text-base">
-            Your vote has been successfully recorded. Thank you for participating in the democratic process.
+            Your vote has been successfully recorded. Thank you for participating in the democratic
+            process.
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
               Close
             </button>
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   // Get active election data
-  const election = await getActiveElectionData(session.associationId)
+  const election = await getActiveElectionData(session.associationId);
 
   // If no active election, show message
   if (!election) {
@@ -142,10 +150,10 @@ export default async function VotingPage() {
       where: {
         associationId: session.associationId,
         isActive: true,
-        startAt: { gt: new Date() }
+        startAt: { gt: new Date() },
       },
-      orderBy: { startAt: 'asc' }
-    })
+      orderBy: { startAt: 'asc' },
+    });
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
@@ -154,40 +162,47 @@ export default async function VotingPage() {
             {upcomingElection ? 'Voting Not Started' : 'No Active Elections'}
           </h1>
           <p className="text-muted-foreground mb-6 text-sm sm:text-base">
-            {upcomingElection 
+            {upcomingElection
               ? `The election "${upcomingElection.title}" will begin on ${upcomingElection.startAt.toLocaleDateString()}.`
-              : 'There are no active elections at this time.'
-            }
+              : 'There are no active elections at this time.'}
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
               Close
             </button>
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   // Get positions for the active election
-  const positions = await getElectionPositions(election.id, session.associationId)
+  const positions = await getElectionPositions(election.id, session.associationId);
 
   if (positions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
         <div className="text-center max-w-md bg-card rounded-lg border border-border p-6 shadow-sm">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Candidates Available</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
+            No Candidates Available
+          </h1>
           <p className="text-muted-foreground mb-6 text-sm sm:text-base">
             There are no candidates registered for the current election.
           </p>
           <form action="/logout" method="POST">
-            <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
               Close
             </button>
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   const voterData = {
@@ -196,14 +211,8 @@ export default async function VotingPage() {
     firstName: voter.first_name,
     lastName: voter.last_name,
     studentId: voter.studentId,
-    association: voter.association
-  }
+    association: voter.association,
+  };
 
-  return (
-    <VotingInterface 
-      voter={voterData}
-      election={election}
-      positions={positions}
-    />
-  )
+  return <VotingInterface voter={voterData} election={election} positions={positions} />;
 }

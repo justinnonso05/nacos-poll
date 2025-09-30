@@ -1,38 +1,38 @@
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { PrismaClient } from "@prisma/client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import ElectionManagementSection from "@/components/admin/settings/ElectionManagementSection"
-import AdminProfileSection from "@/components/admin/settings/AdminProfileSection"
-import AssociationSection from "@/components/admin/settings/AssociationSection"
-import DataExportSection from "@/components/admin/settings/DataExportSection"
-import DangerZoneSection from "@/components/admin/settings/DangerZoneSection"
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { PrismaClient } from '@prisma/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import ElectionManagementSection from '@/components/admin/settings/ElectionManagementSection';
+import AdminProfileSection from '@/components/admin/settings/AdminProfileSection';
+import AssociationSection from '@/components/admin/settings/AssociationSection';
+import DataExportSection from '@/components/admin/settings/DataExportSection';
+import DangerZoneSection from '@/components/admin/settings/DangerZoneSection';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 function calculateElectionStatus(election: any) {
-  if (!election) return 'NO_ELECTION'
-  
-  const now = new Date()
-  if (!election.isActive) return 'PAUSED'
-  if (now < new Date(election.startAt)) return 'NOT_STARTED'
-  if (now > new Date(election.endAt)) return 'ENDED'
-  return 'ACTIVE'
+  if (!election) return 'NO_ELECTION';
+
+  const now = new Date();
+  if (!election.isActive) return 'PAUSED';
+  if (now < new Date(election.startAt)) return 'NOT_STARTED';
+  if (now > new Date(election.endAt)) return 'ENDED';
+  return 'ACTIVE';
 }
 
 export default async function SettingsPage() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) redirect("/admin/login")
+  const session = await getServerSession(authOptions);
+  if (!session?.user) redirect('/admin/login');
 
   // Fetch admin with association
   const admin = await prisma.admin.findUnique({
     where: { id: session.user.id },
-    include: { association: true }
-  })
+    include: { association: true },
+  });
 
-  if (!admin) redirect("/admin/login")
+  if (!admin) redirect('/admin/login');
 
   // Fetch current election
   const election = await prisma.election.findFirst({
@@ -43,19 +43,19 @@ export default async function SettingsPage() {
       _count: {
         select: {
           candidates: true,
-          votes: true
-        }
-      }
-    }
-  })
+          votes: true,
+        },
+      },
+    },
+  });
 
   // Calculate election status
-  const electionStatus = calculateElectionStatus(election)
+  const electionStatus = calculateElectionStatus(election);
 
   // Get stats
   const voterCount = await prisma.voter.count({
-    where: { associationId: admin.associationId }
-  })
+    where: { associationId: admin.associationId },
+  });
 
   return (
     <div className="space-y-6">
@@ -73,11 +73,11 @@ export default async function SettingsPage() {
           <CardTitle>Election Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <ElectionManagementSection 
+          <ElectionManagementSection
             election={election}
             status={electionStatus}
             associationId={admin.associationId}
-            isSuper={session.user.role === "SUPERADMIN"}
+            isSuper={session.user.role === 'SUPERADMIN'}
           />
         </CardContent>
       </Card>
@@ -116,10 +116,7 @@ export default async function SettingsPage() {
               <CardTitle>Data Export</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataExportSection 
-                election={election}
-                voterCount={voterCount}
-              />
+              <DataExportSection election={election} voterCount={voterCount} />
             </CardContent>
           </Card>
 
@@ -128,7 +125,7 @@ export default async function SettingsPage() {
       )}
 
       {/* Danger Zone */}
-      {session.user.role === "SUPERADMIN" && election && (
+      {session.user.role === 'SUPERADMIN' && election && (
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Danger Zone</CardTitle>
@@ -139,5 +136,5 @@ export default async function SettingsPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }

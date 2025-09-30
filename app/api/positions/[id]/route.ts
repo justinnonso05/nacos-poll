@@ -1,55 +1,55 @@
-import { PrismaClient } from "@prisma/client"
-import { success, fail } from "@/lib/apiREsponse"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { z } from "zod"
+import { PrismaClient } from '@prisma/client';
+import { success, fail } from '@/lib/apiREsponse';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { z } from 'zod';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 const updatePositionSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
   order: z.number().int().min(0).optional(),
-  maxCandidates: z.number().int().min(1).optional()
-})
+  maxCandidates: z.number().int().min(1).optional(),
+});
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions)
-    
+    const session = await getServerSession(authOptions);
+
     if (!session?.user) {
-      return fail("Unauthorized", null, 401)
+      return fail('Unauthorized', null, 401);
     }
 
     const admin = await prisma.admin.findUnique({
       where: { id: session.user.id },
-      select: { associationId: true }
-    })
+      select: { associationId: true },
+    });
 
     if (!admin) {
-      return fail("Admin not found", null, 404)
+      return fail('Admin not found', null, 404);
     }
 
     // Await params before using its properties
-    const { id } = await params
+    const { id } = await params;
 
-    const body = await req.json()
-    const result = updatePositionSchema.safeParse(body)
-    
+    const body = await req.json();
+    const result = updatePositionSchema.safeParse(body);
+
     if (!result.success) {
-      return fail("Invalid data", result.error.issues, 400)
+      return fail('Invalid data', result.error.issues, 400);
     }
 
     // Check if position exists and belongs to admin's association
     const existingPosition = await prisma.position.findFirst({
       where: {
         id: id,
-        associationId: admin.associationId
-      }
-    })
+        associationId: admin.associationId,
+      },
+    });
 
     if (!existingPosition) {
-      return fail("Position not found", null, 404)
+      return fail('Position not found', null, 404);
     }
 
     // If updating name, check for duplicates
@@ -58,12 +58,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         where: {
           name: result.data.name,
           associationId: admin.associationId,
-          id: { not: id }
-        }
-      })
+          id: { not: id },
+        },
+      });
 
       if (duplicatePosition) {
-        return fail("Position with this name already exists", null, 409)
+        return fail('Position with this name already exists', null, 409);
       }
     }
 
@@ -72,66 +72,66 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: result.data,
       include: {
         _count: {
-          select: { candidates: true }
-        }
-      }
-    })
+          select: { candidates: true },
+        },
+      },
+    });
 
-    return success("Position updated successfully", position)
+    return success('Position updated successfully', position);
   } catch (error) {
-    console.error("Error updating position:", error)
-    return fail("Internal server error", null, 500)
+    console.error('Error updating position:', error);
+    return fail('Internal server error', null, 500);
   }
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions)
-    
+    const session = await getServerSession(authOptions);
+
     if (!session?.user) {
-      return fail("Unauthorized", null, 401)
+      return fail('Unauthorized', null, 401);
     }
 
     const admin = await prisma.admin.findUnique({
       where: { id: session.user.id },
-      select: { associationId: true }
-    })
+      select: { associationId: true },
+    });
 
     if (!admin) {
-      return fail("Admin not found", null, 404)
+      return fail('Admin not found', null, 404);
     }
 
     // Await params before using its properties
-    const { id } = await params
+    const { id } = await params;
 
     // Check if position exists and belongs to admin's association
     const existingPosition = await prisma.position.findFirst({
       where: {
         id: id,
-        associationId: admin.associationId
-      }
-    })
+        associationId: admin.associationId,
+      },
+    });
 
     if (!existingPosition) {
-      return fail("Position not found", null, 404)
+      return fail('Position not found', null, 404);
     }
 
     // Check if position has candidates
     const candidateCount = await prisma.candidate.count({
-      where: { positionId: id }
-    })
+      where: { positionId: id },
+    });
 
     if (candidateCount > 0) {
-      return fail("Cannot delete position with candidates", null, 400)
+      return fail('Cannot delete position with candidates', null, 400);
     }
 
     await prisma.position.delete({
-      where: { id: id }
-    })
+      where: { id: id },
+    });
 
-    return success("Position deleted successfully", null)
+    return success('Position deleted successfully', null);
   } catch (error) {
-    console.error("Delete position error:", error)
-    return fail("Failed to delete position", null, 500)
+    console.error('Delete position error:', error);
+    return fail('Failed to delete position', null, 500);
   }
 }

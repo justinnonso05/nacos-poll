@@ -1,18 +1,18 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Copy, Eye, EyeOff, Shield } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, Plus, Copy, Eye, EyeOff, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,110 +23,110 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { CreateAdminForm } from "@/components/admin/CreateAdminForm"
+} from '@/components/ui/alert-dialog';
+import { CreateAdminForm } from '@/components/admin/CreateAdminForm';
 
 interface Admin {
-  id: string
-  email: string
-  role: "ADMIN" | "SUPERADMIN"
-  associationId: string
+  id: string;
+  email: string;
+  role: 'ADMIN' | 'SUPERADMIN';
+  associationId: string;
   association: {
-    name: string
-  }
-  createdAt: string
-  updatedAt: string
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CreatedAdmin {
-  id: string
-  email: string
-  role: string
-  associationId: string
-  password: string
+  id: string;
+  email: string;
+  role: string;
+  associationId: string;
+  password: string;
 }
 
 export default function ManageAdminsPage() {
-  const [admins, setAdmins] = useState<Admin[]>([])
-  const [loading, setLoading] = useState(true)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [createdAdmin, setCreatedAdmin] = useState<CreatedAdmin | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createdAdmin, setCreatedAdmin] = useState<CreatedAdmin | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    fetchAdmins()
-  }, [])
+    fetchAdmins();
+  }, []);
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch("/api/admin/list")
-      const data = await response.json()
+      const response = await fetch('/api/admin/list');
+      const data = await response.json();
       if (data.status === 'success') {
-        setAdmins(data.data)
+        setAdmins(data.data);
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch admins")
+      toast.error('Failed to fetch admins');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const deleteAdmin = async (adminId: string) => {
     try {
       const response = await fetch(`/api/admin/delete?id=${adminId}`, {
-        method: "DELETE",
-      })
-      const data = await response.json()
+        method: 'DELETE',
+      });
+      const data = await response.json();
       if (data.status === 'success') {
-        toast.success("Admin deleted successfully")
-        fetchAdmins()
+        toast.success('Admin deleted successfully');
+        fetchAdmins();
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Failed to delete admin")
+      toast.error('Failed to delete admin');
     }
-  }
+  };
 
-  const updateAdminRole = async (adminId: string, newRole: "ADMIN" | "SUPERADMIN") => {
+  const updateAdminRole = async (adminId: string, newRole: 'ADMIN' | 'SUPERADMIN') => {
     try {
-      const response = await fetch("/api/admin/update", {
-        method: "PUT",
+      const response = await fetch('/api/admin/update', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id: adminId, role: newRole }),
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       if (data.status === 'success') {
-        toast.success("Admin role updated successfully")
-        fetchAdmins()
+        toast.success('Admin role updated successfully');
+        fetchAdmins();
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Failed to update admin role")
+      toast.error('Failed to update admin role');
     }
-  }
+  };
 
   const copyCredentials = () => {
     if (createdAdmin) {
-      const credentials = `Email: ${createdAdmin.email}\nPassword: ${createdAdmin.password}`
-      navigator.clipboard.writeText(credentials)
-      toast.success("Credentials copied to clipboard")
+      const credentials = `Email: ${createdAdmin.email}\nPassword: ${createdAdmin.password}`;
+      navigator.clipboard.writeText(credentials);
+      toast.success('Credentials copied to clipboard');
     }
-  }
+  };
 
   const handleAdminCreated = (admin: CreatedAdmin) => {
-    setCreatedAdmin(admin)
-    setCreateDialogOpen(false)
-    fetchAdmins()
-  }
+    setCreatedAdmin(admin);
+    setCreateDialogOpen(false);
+    fetchAdmins();
+  };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   return (
@@ -136,7 +136,7 @@ export default function ManageAdminsPage() {
           <h1 className="text-3xl font-bold">Manage Admins</h1>
           <p className="text-muted-foreground">Create and manage admin accounts</p>
         </div>
-        
+
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -183,11 +183,7 @@ export default function ManageAdminsPage() {
                   <code className="bg-white px-2 py-1 rounded text-sm">
                     {showPassword ? createdAdmin.password : '••••••••••••'}
                   </code>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                   <Button
@@ -222,15 +218,13 @@ export default function ManageAdminsPage() {
                 <div className="flex items-center space-x-4">
                   <div>
                     <h3 className="font-medium">{admin.email}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {admin.association.name}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{admin.association.name}</p>
                   </div>
                   <Badge variant={admin.role === 'SUPERADMIN' ? 'default' : 'secondary'}>
                     {admin.role}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   {admin.role === 'ADMIN' && (
                     <Button
@@ -242,7 +236,7 @@ export default function ManageAdminsPage() {
                       Make Superadmin
                     </Button>
                   )}
-                  
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" variant="destructive">
@@ -253,7 +247,8 @@ export default function ManageAdminsPage() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Admin</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete {admin.email}? This action cannot be undone.
+                          Are you sure you want to delete {admin.email}? This action cannot be
+                          undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -274,10 +269,12 @@ export default function ManageAdminsPage() {
       {admins.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">No admins found. Create your first admin to get started.</p>
+            <p className="text-muted-foreground">
+              No admins found. Create your first admin to get started.
+            </p>
           </CardContent>
         </Card>
       )}
     </div>
-  )
+  );
 }

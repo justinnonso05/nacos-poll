@@ -1,36 +1,36 @@
-import { PrismaClient } from "@prisma/client"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { redirect } from "next/navigation"
-import PositionsTable from "@/components/admin/positions/PositionsTable"
+import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { redirect } from 'next/navigation';
+import PositionsTable from '@/components/admin/positions/PositionsTable';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export default async function PositionsPage() {
-  const session = await getServerSession(authOptions)
-  
+  const session = await getServerSession(authOptions);
+
   if (!session?.user) {
-    redirect('/admin/login')
+    redirect('/admin/login');
   }
 
   const admin = await prisma.admin.findUnique({
     where: { id: session.user.id },
-    select: { associationId: true }
-  })
+    select: { associationId: true },
+  });
 
   if (!admin) {
-    redirect('/admin/login')
+    redirect('/admin/login');
   }
 
   const positions = await prisma.position.findMany({
     where: { associationId: admin.associationId },
     include: {
       _count: {
-        select: { candidates: true }
-      }
+        select: { candidates: true },
+      },
     },
-    orderBy: { order: 'asc' }
-  })
+    orderBy: { order: 'asc' },
+  });
 
   return (
     <div className="space-y-6">
@@ -43,5 +43,5 @@ export default async function PositionsPage() {
 
       <PositionsTable positions={positions} />
     </div>
-  )
+  );
 }

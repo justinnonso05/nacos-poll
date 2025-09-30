@@ -1,33 +1,38 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Edit, Save, X, RefreshCw, Mail, Eye, EyeOff } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, Save, X, RefreshCw, Mail, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface VoterDetailModalProps {
-  voter: any
-  open: boolean
-  onClose: () => void
-  onUpdate: (voter: any) => void
+  voter: any;
+  open: boolean;
+  onClose: () => void;
+  onUpdate: (voter: any) => void;
 }
 
-export default function VoterDetailModal({ voter, open, onClose, onUpdate }: VoterDetailModalProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+export default function VoterDetailModal({
+  voter,
+  open,
+  onClose,
+  onUpdate,
+}: VoterDetailModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
     level: '',
-    studentId: ''
-  })
+    studentId: '',
+  });
 
   // Update form data when voter changes
   useEffect(() => {
@@ -37,68 +42,68 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
         last_name: voter.last_name || '',
         email: voter.email || '',
         level: voter.level || '',
-        studentId: voter.studentId || ''
-      })
+        studentId: voter.studentId || '',
+      });
     }
-  }, [voter])
+  }, [voter]);
 
   const handleSave = async () => {
-    if (!voter) return
+    if (!voter) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`/api/voters/${voter.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+        body: JSON.stringify(formData),
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        onUpdate(result.data)
-        setIsEditing(false)
-        toast.success(result.message || 'Voter updated successfully')
+        onUpdate(result.data);
+        setIsEditing(false);
+        toast.success(result.message || 'Voter updated successfully');
       } else {
-        toast.error(result.message || 'Failed to update voter')
+        toast.error(result.message || 'Failed to update voter');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRegeneratePassword = async () => {
-    if (!voter) return
+    if (!voter) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`/api/voters/${voter.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regeneratePassword: true })
-      })
+        body: JSON.stringify({ regeneratePassword: true }),
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        onUpdate(result.data)
-        toast.success(result.message || 'Password regenerated successfully')
+        onUpdate(result.data);
+        toast.success(result.message || 'Password regenerated successfully');
       } else {
-        toast.error(result.message || 'Failed to regenerate password')
+        toast.error(result.message || 'Failed to regenerate password');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSendNotification = () => {
     // TODO: Implement send notification API call
-    toast.success('Credentials sent to voter')
-  }
+    toast.success('Credentials sent to voter');
+  };
 
   const handleCancel = () => {
     if (voter) {
@@ -107,13 +112,13 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
         last_name: voter.last_name || '',
         email: voter.email || '',
         level: voter.level || '',
-        studentId: voter.studentId || ''
-      })
+        studentId: voter.studentId || '',
+      });
     }
-    setIsEditing(false)
-  }
+    setIsEditing(false);
+  };
 
-  if (!voter) return null
+  if (!voter) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -128,12 +133,12 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Basic Information</CardTitle>
-                
+
                 <div className="flex items-center gap-2">
-                  <Badge variant={voter.hasVoted ? "default" : "secondary"}>
-                    {voter.hasVoted ? "Voted" : "Not Voted"}
+                  <Badge variant={voter.hasVoted ? 'default' : 'secondary'}>
+                    {voter.hasVoted ? 'Voted' : 'Not Voted'}
                   </Badge>
-                  
+
                   {!isEditing ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                       <Edit className="h-4 w-4 mr-2" />
@@ -158,54 +163,70 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="first_name" className="mb-2">First Name</Label>
+                  <Label htmlFor="first_name" className="mb-2">
+                    First Name
+                  </Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, first_name: e.target.value }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="last_name" className="mb-2">Last Name</Label>
+                  <Label htmlFor="last_name" className="mb-2">
+                    Last Name
+                  </Label>
                   <Input
                     id="last_name"
                     value={formData.last_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, last_name: e.target.value }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="email" className="mb-2">Email</Label>
+                <Label htmlFor="email" className="mb-2">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   disabled={!isEditing}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="studentId" className="mb-2">Student ID</Label>
+                  <Label htmlFor="studentId" className="mb-2">
+                    Student ID
+                  </Label>
                   <Input
                     id="studentId"
                     value={formData.studentId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, studentId: e.target.value }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="level" className="mb-2">Level</Label>
+                  <Label htmlFor="level" className="mb-2">
+                    Level
+                  </Label>
                   <Input
                     id="level"
                     value={formData.level}
-                    onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, level: e.target.value }))}
                     disabled={!isEditing}
                   />
                 </div>
@@ -229,7 +250,7 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
                 <Label className="mb-2">Password</Label>
                 <div className="flex gap-2">
                   <Input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     value={voter.password}
                     disabled
                     className="flex-1"
@@ -265,5 +286,5 @@ export default function VoterDetailModal({ voter, open, onClose, onUpdate }: Vot
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

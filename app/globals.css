@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 /* @import "tw-animate-css"; */
 
 @custom-variant dark (&:is(.dark *));
@@ -45,7 +45,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(98.5% 0.002 247.839);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
@@ -79,37 +79,37 @@
 }
 
 .dark {
-  --background: oklch(10.367% 0.03486 265.417 / 0.955);;
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0% 0 0);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: rgb(8, 12, 24);
+  --foreground: oklch(0.98 0.008 230);
+  --card: rgb(16, 24, 40);
+  --card-foreground: oklch(0.98 0.008 230);
+  --popover: oklch(0.16 0.06 235);
+  --popover-foreground: oklch(0.98 0.008 230);
+  --primary: oklch(0.68 0.14 230);
+  --primary-foreground: oklch(0.98 0.008 230);
+  --secondary: oklch(0.26 0.08 235);
+  --secondary-foreground: oklch(0.98 0.008 230);
+  --muted: oklch(0.24 0.05 235);
+  --muted-foreground: oklch(0.66 0.06 235);
+  --accent: oklch(0.72 0.16 195);
+  --accent-foreground: oklch(0.1 0.04 235);
+  --destructive: oklch(0.66 0.2 30);
+  --border: oklch(1 0 0 / 6%);
+  --input: oklch(1 0 0 / 9%);
+  --ring: oklch(0.68 0.14 230 / 50%);
+  --chart-1: oklch(0.68 0.14 230);
+  --chart-2: oklch(0.72 0.16 195);
+  --chart-3: oklch(0.7 0.18 210);
+  --chart-4: oklch(0.64 0.22 250);
+  --chart-5: oklch(0.74 0.14 175);
+  --sidebar: rgb(10, 16, 30);
+  --sidebar-foreground: oklch(0.98 0.008 230);
+  --sidebar-primary: oklch(0.68 0.14 230);
+  --sidebar-primary-foreground: oklch(0.98 0.008 230);
+  --sidebar-accent: oklch(0.26 0.08 235);
+  --sidebar-accent-foreground: oklch(0.98 0.008 230);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.68 0.14 230 / 50%);
 }
 
 @layer base {
@@ -122,30 +122,30 @@
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
+  background: hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+  background: hsl(var(--border));
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 
 .hide-scrollbar {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
 }
 
 /* Firefox scrollbar styling */
 * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) hsl(var(--muted));
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) hsl(var(--muted));
 }

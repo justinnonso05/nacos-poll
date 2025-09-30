@@ -1,37 +1,41 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Trophy, Medal, Award, Equal } from "lucide-react"
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight, Trophy, Medal, Award, Equal } from 'lucide-react';
+import Image from 'next/image';
 
 interface Candidate {
-  id: string
-  name: string
-  manifesto: string | null
-  photoUrl: string | null
-  votes: number
-  percentage: number
-  rank: number
-  isTied: boolean
+  id: string;
+  name: string;
+  manifesto: string | null;
+  photoUrl: string | null;
+  votes: number;
+  percentage: number;
+  rank: number;
+  isTied: boolean;
 }
 
 interface Position {
-  id: string
-  name: string
-  description: string | null
-  totalVotes: number
-  candidates: Candidate[]
+  id: string;
+  name: string;
+  description: string | null;
+  totalVotes: number;
+  candidates: Candidate[];
 }
 
 interface PositionResultsSliderProps {
-  positions: Position[]
-  isElectionActive?: boolean
+  positions: Position[];
+  isElectionActive?: boolean;
 }
 
-export default function PositionResultsSlider({ positions, isElectionActive = false }: PositionResultsSliderProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+export default function PositionResultsSlider({
+  positions,
+  isElectionActive = false,
+}: PositionResultsSliderProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   if (positions.length === 0) {
     return (
@@ -40,82 +44,117 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
           <p className="text-muted-foreground">No position results available</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const currentPosition = positions[currentIndex]
+  const currentPosition = positions[currentIndex];
 
   const handleNext = () => {
-    setCurrentIndex(prev => (prev + 1) % positions.length)
-  }
+    setCurrentIndex((prev) => (prev + 1) % positions.length);
+  };
 
   const handlePrevious = () => {
-    setCurrentIndex(prev => (prev - 1 + positions.length) % positions.length)
-  }
+    setCurrentIndex((prev) => (prev - 1 + positions.length) % positions.length);
+  };
 
   const getPositionIcon = (candidate: Candidate, index: number) => {
     if (candidate.isTied) {
-      return <Equal className="h-5 w-5 text-orange-600 dark:text-orange-500" />
+      return <Equal className="h-5 w-5 text-orange-600 dark:text-orange-500" />;
     }
-    
-    if (candidate.rank === 1) return <Trophy className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
-    if (candidate.rank === 2) return <Medal className="h-5 w-5 text-muted-foreground" />
-    if (candidate.rank === 3) return <Award className="h-5 w-5 text-amber-600 dark:text-amber-500" />
-    return <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">{candidate.rank}</div>
-  }
+
+    if (candidate.rank === 1)
+      return <Trophy className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />;
+    if (candidate.rank === 2) return <Medal className="h-5 w-5 text-muted-foreground" />;
+    if (candidate.rank === 3)
+      return <Award className="h-5 w-5 text-amber-600 dark:text-amber-500" />;
+    return (
+      <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+        {candidate.rank}
+      </div>
+    );
+  };
 
   const getPositionBadge = (candidate: Candidate) => {
     if (candidate.isTied) {
-      return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-200">
-        Draw - {candidate.rank === 1 ? '1st' : candidate.rank === 2 ? '2nd' : candidate.rank === 3 ? '3rd' : `${candidate.rank}th`} Place
-      </Badge>
+      return (
+        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-200">
+          Draw -{' '}
+          {candidate.rank === 1
+            ? '1st'
+            : candidate.rank === 2
+              ? '2nd'
+              : candidate.rank === 3
+                ? '3rd'
+                : `${candidate.rank}th`}{' '}
+          Place
+        </Badge>
+      );
     }
-    
-    if (candidate.rank === 1) return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-200">1st Place</Badge>
-    if (candidate.rank === 2) return <Badge variant="secondary">2nd Place</Badge>
-    if (candidate.rank === 3) return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-200">3rd Place</Badge>
-    return <Badge variant="outline">{candidate.rank}th Place</Badge>
-  }
+
+    if (candidate.rank === 1)
+      return (
+        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-200">
+          1st Place
+        </Badge>
+      );
+    if (candidate.rank === 2) return <Badge variant="secondary">2nd Place</Badge>;
+    if (candidate.rank === 3)
+      return (
+        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-200">
+          3rd Place
+        </Badge>
+      );
+    return <Badge variant="outline">{candidate.rank}th Place</Badge>;
+  };
 
   const getBackgroundStyle = (candidate: Candidate, index: number) => {
     if (candidate.isTied && candidate.rank === 1) {
-      return 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20'
+      return 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20';
     }
     if (candidate.rank === 1) {
-      return 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'
+      return 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20';
     }
-    return 'border-border bg-muted/30'
-  }
+    return 'border-border bg-muted/30';
+  };
 
   const getProgressBarColor = (candidate: Candidate) => {
     if (candidate.isTied && candidate.rank === 1) {
-      return 'bg-orange-500 dark:bg-orange-600'
+      return 'bg-orange-500 dark:bg-orange-600';
     }
     if (candidate.rank === 1) {
-      return 'bg-yellow-500 dark:bg-yellow-600'
+      return 'bg-yellow-500 dark:bg-yellow-600';
     }
-    return 'bg-muted-foreground/60'
-  }
+    return 'bg-muted-foreground/60';
+  };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  }
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   // Check if tie-breaker message should be shown
   const shouldShowTieBreakerMessage = () => {
-    if (!isElectionActive) return false // Don't show if election is not active
-    
+    if (!isElectionActive) return false; // Don't show if election is not active
+
     // Check if there are tied candidates in first place (rank 1)
-    const firstPlaceTiedCandidates = currentPosition.candidates.filter(c => c.rank === 1 && c.isTied)
-    return firstPlaceTiedCandidates.length > 0
-  }
+    const firstPlaceTiedCandidates = currentPosition.candidates.filter(
+      (c) => c.rank === 1 && c.isTied
+    );
+    return firstPlaceTiedCandidates.length > 0;
+  };
 
   return (
     <Card>
       <CardHeader className="border-b">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl text-foreground">{currentPosition.name} Results</CardTitle>
+            <CardTitle className="text-xl text-foreground">
+              {currentPosition.name} Results
+            </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {currentPosition.totalVotes.toLocaleString()} total votes cast
               {currentPosition.description && ` • ${currentPosition.description}`}
@@ -131,7 +170,7 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
         {/* Candidates Results */}
         <div className="space-y-4 mb-6">
           {currentPosition.candidates.map((candidate, index) => (
-            <div 
+            <div
               key={candidate.id}
               className={`flex items-center gap-4 p-4 rounded-lg border ${getBackgroundStyle(candidate, index)}`}
             >
@@ -140,11 +179,15 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
                 {getPositionIcon(candidate, index)}
                 <div className="relative">
                   {candidate.photoUrl ? (
-                    <img 
-                      src={candidate.photoUrl} 
-                      alt={candidate.name}
-                      className="w-16 h-20 object-cover rounded-lg bg-muted"
-                    />
+                    <div className="w-16 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                      <Image
+                        src={candidate.photoUrl}
+                        alt={candidate.name}
+                        width={64}
+                        height={80}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
                   ) : (
                     <div className="w-16 h-20 bg-muted rounded-lg flex items-center justify-center text-muted-foreground font-medium">
                       {getInitials(candidate.name)}
@@ -163,10 +206,23 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h3 className="font-semibold text-lg text-foreground">{candidate.name}</h3>
-                    <p className="text-sm text-muted-foreground">Running for {currentPosition.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Running for {currentPosition.name}
+                    </p>
                     {candidate.isTied && (
                       <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
-                        Tied with {currentPosition.candidates.filter(c => c.votes === candidate.votes && c.id !== candidate.id).length} other candidate{currentPosition.candidates.filter(c => c.votes === candidate.votes && c.id !== candidate.id).length !== 1 ? 's' : ''}
+                        Tied with{' '}
+                        {
+                          currentPosition.candidates.filter(
+                            (c) => c.votes === candidate.votes && c.id !== candidate.id
+                          ).length
+                        }{' '}
+                        other candidate
+                        {currentPosition.candidates.filter(
+                          (c) => c.votes === candidate.votes && c.id !== candidate.id
+                        ).length !== 1
+                          ? 's'
+                          : ''}
                       </p>
                     )}
                   </div>
@@ -176,11 +232,15 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
                 {/* Vote Stats */}
                 <div className="flex items-center gap-6">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{candidate.votes.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-foreground">
+                      {candidate.votes.toLocaleString()}
+                    </div>
                     <p className="text-xs text-muted-foreground">votes</p>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{candidate.percentage.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold text-foreground">
+                      {candidate.percentage.toFixed(1)}%
+                    </div>
                     <p className="text-xs text-muted-foreground">of total votes</p>
                   </div>
                 </div>
@@ -188,7 +248,7 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
                 {/* Progress Bar */}
                 <div className="mt-3">
                   <div className="w-full bg-secondary rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full ${getProgressBarColor(candidate)}`}
                       style={{ width: `${candidate.percentage}%` }}
                     ></div>
@@ -204,10 +264,14 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
           <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
             <div className="flex items-center gap-2 mb-2">
               <Equal className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <h4 className="font-semibold text-orange-800 dark:text-orange-200">First Place Tie</h4>
+              <h4 className="font-semibold text-orange-800 dark:text-orange-200">
+                First Place Tie
+              </h4>
             </div>
             <p className="text-sm text-orange-700 dark:text-orange-300">
-              Multiple candidates are currently tied for first place. Additional votes may resolve this tie, or a tie-breaking mechanism may be required if the election ends with this result.
+              Multiple candidates are currently tied for first place. Additional votes may resolve
+              this tie, or a tie-breaking mechanism may be required if the election ends with this
+              result.
             </p>
           </div>
         )}
@@ -215,10 +279,10 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
         {/* Navigation */}
         {positions.length > 1 && (
           <div className="flex items-center justify-between">
-            <Button 
+            <Button
               type="button"
-              onClick={handlePrevious} 
-              variant="outline" 
+              onClick={handlePrevious}
+              variant="outline"
               size="sm"
               className="flex items-center gap-2"
             >
@@ -242,10 +306,10 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
               ))}
             </div>
 
-            <Button 
+            <Button
               type="button"
-              onClick={handleNext} 
-              variant="outline" 
+              onClick={handleNext}
+              variant="outline"
               size="sm"
               className="flex items-center gap-2"
             >
@@ -256,5 +320,5 @@ export default function PositionResultsSlider({ positions, isElectionActive = fa
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

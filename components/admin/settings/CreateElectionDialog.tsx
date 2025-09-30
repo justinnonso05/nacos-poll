@@ -1,50 +1,50 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface CreateElectionDialogProps {
-  open: boolean
-  onClose: () => void
-  associationId: string
+  open: boolean;
+  onClose: () => void;
+  associationId: string;
 }
 
 export default function CreateElectionDialog({
   open,
   onClose,
-  associationId
+  associationId,
 }: CreateElectionDialogProps) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     startAt: '',
-    endAt: ''
-  })
-  const [loading, setLoading] = useState(false)
+    endAt: '',
+  });
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       // Validate dates
-      const startDate = new Date(formData.startAt)
-      const endDate = new Date(formData.endAt)
-      const now = new Date()
+      const startDate = new Date(formData.startAt);
+      const endDate = new Date(formData.endAt);
+      const now = new Date();
 
       if (endDate <= startDate) {
-        toast.error('End date must be after start date')
-        return
+        toast.error('End date must be after start date');
+        return;
       }
 
       if (endDate <= now) {
-        toast.error('End date must be in the future')
-        return
+        toast.error('End date must be in the future');
+        return;
       }
 
       const response = await fetch('/api/election/create', {
@@ -54,43 +54,43 @@ export default function CreateElectionDialog({
           ...formData,
           associationId,
           startAt: startDate.toISOString(),
-          endAt: endDate.toISOString()
-        })
-      })
+          endAt: endDate.toISOString(),
+        }),
+      });
 
       if (response.ok) {
-        toast.success('Election created successfully')
-        onClose()
-        window.location.reload()
+        toast.success('Election created successfully');
+        onClose();
+        window.location.reload();
       } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to create election')
+        const error = await response.json();
+        toast.error(error.error || 'Failed to create election');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const formatDateForInput = (date: Date) => {
-    return date.toISOString().slice(0, 16)
-  }
+    return date.toISOString().slice(0, 16);
+  };
 
   const getMinStartDate = () => {
-    return formatDateForInput(new Date())
-  }
+    return formatDateForInput(new Date());
+  };
 
   const getMinEndDate = () => {
     if (formData.startAt) {
-      const startDate = new Date(formData.startAt)
-      startDate.setHours(startDate.getHours() + 1) // Minimum 1 hour duration
-      return formatDateForInput(startDate)
+      const startDate = new Date(formData.startAt);
+      startDate.setHours(startDate.getHours() + 1); // Minimum 1 hour duration
+      return formatDateForInput(startDate);
     }
-    const now = new Date()
-    now.setHours(now.getHours() + 1)
-    return formatDateForInput(now)
-  }
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    return formatDateForInput(now);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -132,9 +132,7 @@ export default function CreateElectionDialog({
               min={getMinStartDate()}
               required
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              When voting should begin
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">When voting should begin</p>
           </div>
 
           <div>
@@ -147,9 +145,7 @@ export default function CreateElectionDialog({
               min={getMinEndDate()}
               required
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              When voting should end
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">When voting should end</p>
           </div>
 
           <div className="flex gap-2 pt-4">
@@ -163,5 +159,5 @@ export default function CreateElectionDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

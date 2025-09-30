@@ -1,43 +1,48 @@
-'use client'
+'use client';
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts"
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 
 interface TurnoutData {
-  level: string
-  total: number
-  voted: number
-  percentage: number
+  level: string;
+  total: number;
+  voted: number;
+  percentage: number;
 }
 
 interface TurnoutByLevelChartProps {
-  data: TurnoutData[]
+  data: TurnoutData[];
 }
 
 export default function TurnoutByLevelChart({ data }: TurnoutByLevelChartProps) {
-  const chartData = data.map(item => ({
+  const chartData = data.map((item) => ({
     level: item.level,
     Voted: item.voted,
     'Not Voted': item.total - item.voted,
-    'Turnout %': item.percentage
-  }))
+    'Turnout %': item.percentage,
+  }));
 
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
-          <XAxis 
-            dataKey="level" 
-            className="text-xs fill-gray-600"
-            tick={{ fontSize: 12 }}
-          />
+          <XAxis dataKey="level" className="text-xs fill-gray-600" tick={{ fontSize: 12 }} />
           <YAxis className="text-xs fill-gray-600" tick={{ fontSize: 12 }} />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'white', 
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'white',
               border: '1px solid #e5e7eb',
               borderRadius: '6px',
-              fontSize: '12px'
+              fontSize: '12px',
             }}
           />
           <Legend />
@@ -46,5 +51,5 @@ export default function TurnoutByLevelChart({ data }: TurnoutByLevelChartProps) 
         </BarChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }

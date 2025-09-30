@@ -1,53 +1,53 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Vote, Lock, User, Shield } from "lucide-react"
-import { toast } from "sonner"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Vote, Lock, User, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function VoterLogin() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     studentId: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
+    password: '',
+  });
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
       const response = await fetch('/api/auth/voter/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+        body: JSON.stringify(formData),
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        toast.success("Login successful!")
-        router.refresh()
+        toast.success('Login successful!');
+        router.refresh();
       } else {
-        setError(result.message || 'Login failed')
+        setError(result.message || 'Login failed');
         if (result.message?.includes('already voted')) {
-          toast.error("You have already voted")
+          toast.error('You have already voted');
         }
       }
     } catch (error) {
-      setError('Something went wrong. Please try again.')
+      setError('Something went wrong. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -85,7 +85,9 @@ export default function VoterLogin() {
                   <Input
                     id="studentId"
                     value={formData.studentId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, studentId: e.target.value }))
+                    }
                     placeholder="Enter your matric number"
                     className="pl-11 h-12 border-gray-200 focus:border-slate-400 focus:ring-slate-400"
                     required
@@ -103,7 +105,7 @@ export default function VoterLogin() {
                     id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                     placeholder="Enter your password"
                     className="pl-11 h-12 border-gray-200 focus:border-slate-400 focus:ring-slate-400"
                     required
@@ -111,12 +113,12 @@ export default function VoterLogin() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium" 
+              <Button
+                type="submit"
+                className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium"
                 disabled={loading}
               >
-                {loading ? "Signing in..." : "Sign In to Vote"}
+                {loading ? 'Signing in...' : 'Sign In to Vote'}
               </Button>
             </form>
 
@@ -126,7 +128,10 @@ export default function VoterLogin() {
                 <Shield className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-gray-600">
                   <p className="font-medium mb-1">Secure Voting</p>
-                  <p>Your vote is anonymous and encrypted. Contact your association administrator if you need assistance.</p>
+                  <p>
+                    Your vote is anonymous and encrypted. Contact your association administrator if
+                    you need assistance.
+                  </p>
                 </div>
               </div>
             </div>
@@ -134,5 +139,5 @@ export default function VoterLogin() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

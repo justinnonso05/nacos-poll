@@ -1,68 +1,72 @@
-import { PrismaClient } from "@prisma/client"
-import { cookies } from "next/headers"
-import { success, fail } from "@/lib/apiREsponse" // Fixed typo: apiRsponse → apiResponse
-import { z } from "zod"
+import { PrismaClient } from '@prisma/client';
+import { cookies } from 'next/headers';
+import { success, fail } from '@/lib/apiREsponse'; // Fixed typo: apiRsponse → apiResponse
+import { z } from 'zod';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function getSessionData() {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('voter-session')?.value
-  if (!sessionCookie) return null
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('voter-session')?.value;
+  if (!sessionCookie) return null;
 
   try {
-    const sessionData = JSON.parse(sessionCookie)
-    
+    const sessionData = JSON.parse(sessionCookie);
+
     // Check if session has expired
     if (Date.now() - sessionData.loginTime > 900000) {
-      cookieStore.delete('voter-session')
-      return null
+      cookieStore.delete('voter-session');
+      return null;
     }
 
-    return sessionData
+    return sessionData;
   } catch (error) {
-    cookieStore.delete('voter-session')
-    return null
+    cookieStore.delete('voter-session');
+    return null;
   }
 }
 
 const voteSchema = z.object({
   electionId: z.string().min(1),
-  votes: z.array(z.object({
-    positionId: z.string().min(1),
-    candidateId: z.string().min(1)
-  })).min(1, "At least one vote is required")
-})
+  votes: z
+    .array(
+      z.object({
+        positionId: z.string().min(1),
+        candidateId: z.string().min(1),
+      })
+    )
+    .min(1, 'At least one vote is required'),
+});
 
 export async function POST(req: Request) {
   try {
-    const session = await getSessionData() // Add await here
+    const session = await getSessionData(); // Add await here
     if (!session) {
-      return fail("Session expired. Please login again.", null, 401)
+      return fail('Session expired. Please login again.', null, 401);
     }
 
-    const body = await req.json()
-    const result = voteSchema.safeParse(body)
-    
+    const body = await req.json();
+    const result = voteSchema.safeParse(body);
+
     if (!result.success) {
-      return fail("Invalid vote data", result.error.issues, 400)
+      return fail('Invalid vote data', result.error.issues, 400);
     }
 
-    const { electionId, votes } = result.data
+    const { electionId, votes } = result.data;
 
     // Double-check voter hasn't already voted (security measure)
     const voter = await prisma.voter.findUnique({
-      where: { id: session.id }
-    })
+      where: { id: session.id },
+    });
 
     if (!voter) {
-      return fail("Voter not found", null, 404)
+      return fail('Voter not found', null, 404);
     }
 
     if (voter.hasVoted) {
-      const cookieStore = await cookies()
-      cookieStore.delete('voter-session')
-      return fail("You have already voted. Multiple voting is not allowed.", null, 403)
+      const cookieStore = await cookies();
+      cookieStore.delete('voter-session');
+      return fail('You have already voted. Multiple voting is not allowed.', null, 403);
     }
 
     // Verify election is still active and belongs to voter's association
@@ -72,12 +76,12 @@ export async function POST(req: Request) {
         associationId: session.associationId,
         isActive: true,
         startAt: { lte: new Date() },
-        endAt: { gte: new Date() }
-      }
-    })
+        endAt: { gte: new Date() },
+      },
+    });
 
     if (!election) {
-      return fail("Election not found, not active, or has ended.", null, 404)
+      return fail('Election not found, not active, or has ended.', null, 404);
     }
 
     // Verify all candidates belong to the election and positions
@@ -86,12 +90,12 @@ export async function POST(req: Request) {
         where: {
           id: vote.candidateId,
           electionId: electionId,
-          positionId: vote.positionId
-        }
-      })
+          positionId: vote.positionId,
+        },
+      });
 
       if (!candidate) {
-        return fail("Invalid candidate selection detected.", null, 400)
+        return fail('Invalid candidate selection detected.', null, 400);
       }
     }
 
@@ -99,30 +103,33 @@ export async function POST(req: Request) {
     await prisma.$transaction(async (tx) => {
       // Create vote records (anonymous - no direct link to voter identity in vote record)
       await tx.vote.createMany({
-        data: votes.map(vote => ({
+        data: votes.map((vote) => ({
           voterId: session.id,
           electionId: electionId,
-          candidateId: vote.candidateId
-        }))
-      })
+          candidateId: vote.candidateId,
+        })),
+      });
 
       // Mark voter as having voted
       await tx.voter.update({
         where: { id: session.id },
-        data: { hasVoted: true }
-      })
-    })
+        data: { hasVoted: true },
+      });
+    });
 
     // Immediately destroy session after successful vote
-    const cookieStore =  await cookies()
-    cookieStore.delete('voter-session')
+    const cookieStore = await cookies();
+    cookieStore.delete('voter-session');
 
-    return success("Your votes have been cast successfully. Thank you for participating in the democratic process!", {
-      message: "You will now be logged out automatically for security purposes.",
-      votedAt: new Date().toISOString()
-    })
+    return success(
+      'Your votes have been cast successfully. Thank you for participating in the democratic process!',
+      {
+        message: 'You will now be logged out automatically for security purposes.',
+        votedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
-    console.error("Cast vote error:", error)
-    return fail("Internal server error", null, 500)
+    console.error('Cast vote error:', error);
+    return fail('Internal server error', null, 500);
   }
 }

@@ -1,170 +1,189 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
-import { toast } from "sonner"
-import * as XLSX from 'xlsx'
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface PreviewData {
-  first_name: string
-  last_name: string
-  email: string
-  level: string
-  studentId: string
-  [key: string]: any
+  first_name: string;
+  last_name: string;
+  email: string;
+  level: string;
+  studentId: string;
+  [key: string]: any;
 }
 
 interface UploadResults {
-  success: any[]
-  failed: Array<{ row: any; error: string }>
-  total: number
+  success: any[];
+  failed: Array<{ row: any; error: string }>;
+  total: number;
 }
 
 export default function VoterUpload() {
-  const [open, setOpen] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [previewData, setPreviewData] = useState<PreviewData[]>([])
-  const [loading, setLoading] = useState(false)
-  const [uploadResults, setUploadResults] = useState<UploadResults | null>(null)
-  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewData, setPreviewData] = useState<PreviewData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadResults, setUploadResults] = useState<UploadResults | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const requiredFields = ['first_name', 'last_name', 'email', 'level', 'studentId']
+  const requiredFields = ['first_name', 'last_name', 'email', 'level', 'studentId'];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0]
+    const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile)
-      parseFile(selectedFile)
+      setFile(selectedFile);
+      parseFile(selectedFile);
     }
-  }
+  };
 
   const parseFile = async (file: File) => {
     try {
-      const buffer = await file.arrayBuffer()
-      const workbook = XLSX.read(buffer)
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet)
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       // Validate required fields
       if (jsonData.length === 0) {
-        setValidationErrors(['File is empty'])
-        return
+        setValidationErrors(['File is empty']);
+        return;
       }
 
-      const firstRow = jsonData[0] as any
-      const fileFields = Object.keys(firstRow).map(key => key.toLowerCase().replace(/\s+/g, '_'))
-      const missingFields = requiredFields.filter(field => 
-        !fileFields.some(fileField => 
-          fileField.includes(field.toLowerCase()) || 
-          (field === 'studentId' && (fileField.includes('matric') || fileField.includes('student_id')))
-        )
-      )
+      const firstRow = jsonData[0] as any;
+      const fileFields = Object.keys(firstRow).map((key) => key.toLowerCase().replace(/\s+/g, '_'));
+      const missingFields = requiredFields.filter(
+        (field) =>
+          !fileFields.some(
+            (fileField) =>
+              fileField.includes(field.toLowerCase()) ||
+              (field === 'studentId' &&
+                (fileField.includes('matric') || fileField.includes('student_id')))
+          )
+      );
 
       if (missingFields.length > 0) {
-        setValidationErrors([`Missing required columns: ${missingFields.join(', ')}`])
-        return
+        setValidationErrors([`Missing required columns: ${missingFields.join(', ')}`]);
+        return;
       }
 
       // Map data to expected format
       const mappedData = jsonData.map((row: any) => {
-        const mapped: any = {}
-        Object.keys(row).forEach(key => {
-          const normalizedKey = key.toLowerCase().replace(/\s+/g, '_')
+        const mapped: any = {};
+        Object.keys(row).forEach((key) => {
+          const normalizedKey = key.toLowerCase().replace(/\s+/g, '_');
           if (normalizedKey.includes('first') && normalizedKey.includes('name')) {
-            mapped.first_name = String(row[key] || '').trim()
+            mapped.first_name = String(row[key] || '').trim();
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
-            mapped.last_name = String(row[key] || '').trim()
+            mapped.last_name = String(row[key] || '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] || '').trim().toLowerCase()
+            mapped.email = String(row[key] || '')
+              .trim()
+              .toLowerCase();
           } else if (normalizedKey.includes('level')) {
-            mapped.level = String(row[key] || '').trim()
+            mapped.level = String(row[key] || '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {
-            mapped.studentId = String(row[key] || '').trim()
+            mapped.studentId = String(row[key] || '').trim();
           }
-        })
-        return mapped
-      })
+        });
+        return mapped;
+      });
 
-      setPreviewData(mappedData.slice(0, 5))
-      setValidationErrors([])
+      setPreviewData(mappedData.slice(0, 5));
+      setValidationErrors([]);
     } catch (error) {
-      setValidationErrors(['Error reading file. Please ensure it\'s a valid CSV or Excel file.'])
+      setValidationErrors(["Error reading file. Please ensure it's a valid CSV or Excel file."]);
     }
-  }
+  };
 
   const handleUpload = async () => {
-    if (!file) return
+    if (!file) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const buffer = await file.arrayBuffer()
-      const workbook = XLSX.read(buffer)
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet)
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       // Map all data
       const mappedData = jsonData.map((row: any) => {
-        const mapped: any = {}
-        Object.keys(row).forEach(key => {
-          const normalizedKey = key.toLowerCase().replace(/\s+/g, '_')
+        const mapped: any = {};
+        Object.keys(row).forEach((key) => {
+          const normalizedKey = key.toLowerCase().replace(/\s+/g, '_');
           if (normalizedKey.includes('first') && normalizedKey.includes('name')) {
-            mapped.first_name = String(row[key] || '').trim()
+            mapped.first_name = String(row[key] || '').trim();
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
-            mapped.last_name = String(row[key] || '').trim()
+            mapped.last_name = String(row[key] || '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] || '').trim().toLowerCase()
+            mapped.email = String(row[key] || '')
+              .trim()
+              .toLowerCase();
           } else if (normalizedKey.includes('level')) {
-            mapped.level = String(row[key] || '').trim()
+            mapped.level = String(row[key] || '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {
-            mapped.studentId = String(row[key] || '').trim()
+            mapped.studentId = String(row[key] || '').trim();
           }
-        })
-        return mapped
-      })
+        });
+        return mapped;
+      });
 
       const response = await fetch('/api/voters/bulk-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voters: mappedData })
-      })
+        body: JSON.stringify({ voters: mappedData }),
+      });
 
-      const apiResponse = await response.json()
-      
+      const apiResponse = await response.json();
+
       // Extract the actual results from the standardized response format
-      const results = apiResponse.data || apiResponse
-      setUploadResults(results)
+      const results = apiResponse.data || apiResponse;
+      setUploadResults(results);
 
       if (results.success?.length > 0) {
-        toast.success(`Successfully added ${results.success.length} voters`)
+        toast.success(`Successfully added ${results.success.length} voters`);
       }
       if (results.failed?.length > 0) {
-        toast.warning(`${results.failed.length} voters failed to upload`)
+        toast.warning(`${results.failed.length} voters failed to upload`);
       }
-
     } catch (error) {
-      toast.error('Upload failed')
+      toast.error('Upload failed');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const resetUpload = () => {
-    setFile(null)
-    setPreviewData([])
-    setUploadResults(null)
-    setValidationErrors([])
-  }
+    setFile(null);
+    setPreviewData([]);
+    setUploadResults(null);
+    setValidationErrors([]);
+  };
 
   const handleClose = () => {
-    setOpen(false)
-    setTimeout(resetUpload, 300)
-  }
+    setOpen(false);
+    setTimeout(resetUpload, 300);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -203,9 +222,7 @@ export default function VoterUpload() {
                     </Badge>
                   </div>
                   <div className="text-center">
-                    <Badge variant="outline">
-                      Total: {uploadResults.total || 0}
-                    </Badge>
+                    <Badge variant="outline">Total: {uploadResults.total || 0}</Badge>
                   </div>
                 </div>
 
@@ -217,8 +234,8 @@ export default function VoterUpload() {
                         <Alert key={index} className="mb-2">
                           <XCircle className="h-4 w-4" />
                           <AlertDescription>
-                            <strong>Row:</strong> {failure.row?.first_name} {failure.row?.last_name} - 
-                            <strong> Error:</strong> {failure.error}
+                            <strong>Row:</strong> {failure.row?.first_name} {failure.row?.last_name}{' '}
+                            -<strong> Error:</strong> {failure.error}
                           </AlertDescription>
                         </Alert>
                       ))}
@@ -227,9 +244,7 @@ export default function VoterUpload() {
                 )}
 
                 <div className="flex gap-2 mt-4">
-                  <Button onClick={() => window.location.reload()}>
-                    Refresh Page
-                  </Button>
+                  <Button onClick={() => window.location.reload()}>Refresh Page</Button>
                   <Button variant="outline" onClick={resetUpload}>
                     Upload More
                   </Button>
@@ -259,19 +274,15 @@ export default function VoterUpload() {
                     />
                     <label htmlFor="file-upload" className="cursor-pointer">
                       <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-600">
-                        Click to select CSV or Excel file
-                      </p>
-                      {file && (
-                        <p className="text-sm font-medium mt-2">{file.name}</p>
-                      )}
+                      <p className="text-sm text-gray-600">Click to select CSV or Excel file</p>
+                      {file && <p className="text-sm font-medium mt-2">{file.name}</p>}
                     </label>
                   </div>
 
                   <div className="mt-4">
                     <h4 className="font-medium mb-2">Required Columns:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {requiredFields.map(field => (
+                      {requiredFields.map((field) => (
                         <Badge key={field} variant="outline">
                           {field === 'studentId' ? 'Matric Number' : field.replace('_', ' ')}
                         </Badge>
@@ -328,7 +339,7 @@ export default function VoterUpload() {
                         Cancel
                       </Button>
                       <Button onClick={handleUpload} disabled={loading}>
-                        {loading ? "Uploading..." : "Upload All Voters"}
+                        {loading ? 'Uploading...' : 'Upload All Voters'}
                       </Button>
                     </div>
                   </CardContent>
@@ -339,5 +350,5 @@ export default function VoterUpload() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

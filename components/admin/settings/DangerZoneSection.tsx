@@ -1,88 +1,93 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Trash2, AlertTriangle, Download } from "lucide-react"
-import { toast } from "sonner"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Trash2, AlertTriangle, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface DangerZoneSectionProps {
-  election: any
+  election: any;
 }
 
 export default function DangerZoneSection({ election }: DangerZoneSectionProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [exportBeforeDelete, setExportBeforeDelete] = useState(true)
-  const [loading, setLoading] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [exportBeforeDelete, setExportBeforeDelete] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     if (!confirmDelete) {
-      toast.error('Please confirm deletion by checking the checkbox')
-      return
+      toast.error('Please confirm deletion by checking the checkbox');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       // Export data first if requested
       if (exportBeforeDelete) {
-        const response = await fetch(`/api/election/${election.id}/export?type=all`)
+        const response = await fetch(`/api/election/${election.id}/export?type=all`);
         if (response.ok) {
-          const blob = await response.blob()
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.style.display = 'none'
-          a.href = url
-          a.download = `${election.title}-complete-backup-${new Date().toISOString().split('T')[0]}.zip`
-          document.body.appendChild(a)
-          a.click()
-          window.URL.revokeObjectURL(url)
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `${election.title}-complete-backup-${new Date().toISOString().split('T')[0]}.zip`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
         }
       }
 
       // Delete the election
       const deleteResponse = await fetch(`/api/election/${election.id}`, {
-        method: 'DELETE'
-      })
+        method: 'DELETE',
+      });
 
       if (deleteResponse.ok) {
-        toast.success('Election deleted successfully')
-        setShowDeleteDialog(false)
-        window.location.reload()
+        toast.success('Election deleted successfully');
+        setShowDeleteDialog(false);
+        window.location.reload();
       } else {
-        toast.error('Failed to delete election')
+        toast.error('Failed to delete election');
       }
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-medium text-destructive">Danger Zone</h3>
-          <p className="text-muted-foreground">Irreversible actions that affect your election data</p>
+          <p className="text-muted-foreground">
+            Irreversible actions that affect your election data
+          </p>
         </div>
 
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Deleting an election will permanently remove all associated data including votes, 
+            Deleting an election will permanently remove all associated data including votes,
             candidates, and voter records. This action cannot be undone.
           </AlertDescription>
         </Alert>
 
         <div className="flex justify-start">
-          <Button 
-            variant="destructive" 
-            onClick={() => setShowDeleteDialog(true)}
-          >
+          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
             <Trash2 className="h-4 w-4 mr-2" />
             Delete Election
           </Button>
@@ -115,7 +120,7 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
 
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="export"
                   checked={exportBeforeDelete}
                   onCheckedChange={(checked) => setExportBeforeDelete(checked === true)}
@@ -127,7 +132,7 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="confirm"
                   checked={confirmDelete}
                   onCheckedChange={(checked) => setConfirmDelete(checked === true)}
@@ -139,25 +144,25 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowDeleteDialog(false)}
                 className="flex-1"
               >
                 Cancel
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleDelete}
                 disabled={!confirmDelete || loading}
                 className="flex-1"
               >
-                {loading ? "Deleting..." : "Delete Election"}
+                {loading ? 'Deleting...' : 'Delete Election'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

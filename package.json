@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -55,6 +56,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
+    "eslint-plugin-unused-imports": "^4.2.0",
     "prisma": "^6.16.2",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.8",
