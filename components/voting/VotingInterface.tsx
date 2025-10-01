@@ -228,7 +228,7 @@ export default function VotingInterface({ voter, election, positions }: VotingIn
       <div className="pt-15 sm:pt-17">
         {/* Election Info Banner */}
         <div className="bg-card border-b border-none">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 pb-1 sm:py-5 sm:pb-0">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <div>
                 {/* <h2 className="text-xl sm:text-3xl font-bold text-foreground">{election.title}</h2> */}
@@ -389,7 +389,7 @@ export default function VotingInterface({ voter, election, positions }: VotingIn
                           className={`group cursor-pointer transition-all duration-200 rounded-lg border-2 p-4 hover:shadow-lg ${
                             selectedCandidates[currentPosition.id] === candidate.id
                               ? 'border-primary shadow-lg'
-                              : 'border-border hover:border-primary/50'
+                              : 'shadow-md hover:border-primary/50'
                           }`}
                           onClick={() => handleCandidateSelect(currentPosition.id, candidate.id)}
                         >
