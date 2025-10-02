@@ -1,11 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { adminSchema } from '@/lib/schemas/admin';
 import { success, fail } from '@/lib/apiREsponse';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -17,12 +15,12 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    // Remove associationId from validation and use superadmin's association
-    const { email, password, role } = body;
-
-    if (!email || !password || !role) {
-      return fail('Email, password, and role are required', null, 400);
+    // Validate body using adminSchema
+    const result = adminSchema.safeParse(body);
+    if (!result.success) {
+      return fail('Invalid data', result.error.issues, 400);
     }
+    const { email, password, role } = result.data;
 
     // Check if admin already exists
     const existing = await prisma.admin.findUnique({ where: { email } });
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
         email,
         passwordHash,
         role,
-        associationId: session.user.associationId, // Auto-pass superadmin's association ID
+        associationId: session.user.associationId,
       },
     });
 
@@ -54,6 +52,7 @@ export async function POST(req: Request) {
       201
     );
   } catch (error) {
+    console.error(error);
     return fail('Failed to create admin.', null, 500);
   }
 }

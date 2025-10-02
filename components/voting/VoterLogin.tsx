@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Vote, Lock, User, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,12 +16,10 @@ export default function VoterLogin() {
     studentId: '',
     password: '',
   });
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
       const response = await fetch('/api/auth/voter/login', {
@@ -37,13 +34,13 @@ export default function VoterLogin() {
         toast.success('Login successful!');
         router.refresh();
       } else {
-        setError(result.message || 'Login failed');
+        toast.error(result.message || 'Login failed');
         if (result.message?.includes('already voted')) {
           toast.error('You have already voted');
         }
       }
     } catch (error) {
-      setError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -70,12 +67,6 @@ export default function VoterLogin() {
           </CardHeader>
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <Alert variant="destructive" className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800">{error}</AlertDescription>
-                </Alert>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="studentId" className="text-sm font-medium text-gray-700">
                   Student ID

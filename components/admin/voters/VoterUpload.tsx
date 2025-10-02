@@ -104,7 +104,9 @@ export default function VoterUpload() {
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
             mapped.last_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] ?? '').trim().toLowerCase();
+            mapped.email = String(row[key] ?? '')
+              .trim()
+              .toLowerCase();
           } else if (normalizedKey.includes('level')) {
             mapped.level = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {
@@ -147,7 +149,9 @@ export default function VoterUpload() {
           } else if (normalizedKey.includes('last') && normalizedKey.includes('name')) {
             mapped.last_name = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('email')) {
-            mapped.email = String(row[key] ?? '').trim().toLowerCase();
+            mapped.email = String(row[key] ?? '')
+              .trim()
+              .toLowerCase();
           } else if (normalizedKey.includes('level')) {
             mapped.level = String(row[key] ?? '').trim();
           } else if (normalizedKey.includes('matric') || normalizedKey.includes('student_id')) {

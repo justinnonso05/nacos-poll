@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { success, fail } from '@/lib/apiREsponse';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 const loginSchema = z.object({
   studentId: z.string().min(1, 'Student ID is required'),

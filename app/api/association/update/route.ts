@@ -1,16 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { success, fail } from '@/lib/apiREsponse';
-
-const prisma = new PrismaClient();
-
-// Extend your schema to include id
-const updateAssociationSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  logoUrl: z.string().optional(),
-});
+import { updateAssociationSchema } from '@/lib/schemas/association';
 
 export async function PUT(req: Request) {
   try {
@@ -35,6 +26,7 @@ export async function PUT(req: Request) {
 
     return success('Association updated successfully.', updated);
   } catch (error) {
+    console.error(error);
     return fail('Failed to update association.', null, 500);
   }
 }

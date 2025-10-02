@@ -1,17 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { success, fail } from '@/lib/apiREsponse';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { z } from 'zod';
-
-const prisma = new PrismaClient();
-
-const updatePositionSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
-  order: z.number().int().min(0).optional(),
-  maxCandidates: z.number().int().min(1).optional(),
-});
+import { updatePositionSchema } from '@/lib/schemas/position';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

@@ -1,10 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import VoterLogin from '@/components/voting/VoterLogin';
 import VotingInterface from '@/components/voting/VotingInterface';
-
-const prisma = new PrismaClient();
 
 async function getVoterSession() {
   const cookieStore = await cookies();
@@ -21,6 +19,7 @@ async function getVoterSession() {
 
     return sessionData;
   } catch (error) {
+    console.error(error);
     return null;
   }
 }

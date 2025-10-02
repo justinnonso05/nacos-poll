@@ -107,6 +107,7 @@ export default function ManageAdminsPage() {
         toast.error(data.message);
       }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to update admin role');
     }
   };

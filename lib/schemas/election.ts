@@ -16,3 +16,15 @@ export const electionUpdateSchema = z.object({
   endAt: z.string().optional(),
   isActive: z.boolean().optional(),
 });
+
+export const voteSchema = z.object({
+  electionId: z.string().min(1),
+  votes: z
+    .array(
+      z.object({
+        positionId: z.string().min(1),
+        candidateId: z.string().min(1),
+      })
+    )
+    .min(1, 'At least one vote is required'),
+});

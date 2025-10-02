@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import PositionsTable from '@/components/admin/positions/PositionsTable';
-
-const prisma = new PrismaClient();
 
 export default async function PositionsPage() {
   const session = await getServerSession(authOptions);

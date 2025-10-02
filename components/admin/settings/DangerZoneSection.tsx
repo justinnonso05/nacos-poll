@@ -109,7 +109,8 @@ export default function DangerZoneSection({ election }: DangerZoneSectionProps) 
           <DialogHeader>
             <DialogTitle className="text-destructive">Delete Election</DialogTitle>
             <DialogDescription>
-              You are about to permanently delete &quot;{election.title}&quot; and all associated data.
+              You are about to permanently delete &quot;{election.title}&quot; and all associated
+              data.
             </DialogDescription>
           </DialogHeader>
 

@@ -86,6 +86,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="e.g. President, Vice President"
+              className='h-11'
               required
             />
           </div>
@@ -112,6 +113,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
                 id="order"
                 type="number"
                 value={formData.order}
+                className='h-11'
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, order: parseInt(e.target.value) || 0 }))
                 }
@@ -126,6 +128,7 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
               <Input
                 id="maxCandidates"
                 type="number"
+                className='h-11'
                 value={formData.maxCandidates}
                 onChange={(e) =>
                   setFormData((prev) => ({

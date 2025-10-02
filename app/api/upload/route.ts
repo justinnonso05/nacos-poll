@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 

@@ -1,15 +1,13 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, UserCheck, Vote, TrendingUp, Trophy, Calendar } from 'lucide-react';
 import TurnoutChart from '@/components/admin/TurnoutChart';
 import PositionResultsSlider from '@/components/admin/PositionResultsSlider';
 import TurnoutByLevelChart from '@/components/admin/TurnoutByLevelChart';
-
-const prisma = new PrismaClient();
 
 async function getDashboardData(associationId: string) {
   // Get active election

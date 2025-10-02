@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { electionUpdateSchema } from '@/lib/schemas/election';
 import { success, fail } from '@/lib/apiREsponse';
-
-const prisma = new PrismaClient();
 
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
@@ -34,6 +32,7 @@ export async function PUT(req: Request) {
 
     return success('Election updated successfully.', election, 200);
   } catch (error) {
+    console.error(error);
     return fail('Failed to update election.', null, 500);
   }
 }

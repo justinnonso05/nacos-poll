@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  directUrl = env("DIRECT_DATABASE_URL")   // Aiven direct for migrations
+  url       = env("DATABASE_URL")          // Data Proxy for runtime
 }
 
 model Association {
@@ -30,7 +31,7 @@ model Admin {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
-
+ 
 enum AdminRole {
   SUPERADMIN
   ADMIN
@@ -86,9 +87,9 @@ model Candidate {
   id           String      @id @default(uuid())
   name         String
   manifesto    String?
-  photoUrl     String?     @default("https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=face")
+  photoUrl     String?     @default("https://res.cloudinary.com/dpyxbvcyl/image/upload/v1759396141/UNDECIDED_qsubo3.png")
   electionId   String
-  election     Election    @relation(fields: [electionId], references: [id])
+  election     Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   positionId   String
   position     Position    @relation(fields: [positionId], references: [id])
   votes        Vote[]

@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { associationSchema } from '@/lib/schemas/association';
 import { success, fail } from '@/lib/apiREsponse';
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +29,7 @@ export async function POST(req: Request) {
     // Return the created association as JSON
     return success('Association created successfully.', association, 201);
   } catch (error) {
+    console.error(error);
     // Handle unexpected errors
     return fail('Failed to create association.', null, 500);
   }

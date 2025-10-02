@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { success, fail } from '@/lib/apiREsponse'; // Fixed typo: apiRsponse → apiResponse
-import { z } from 'zod';
-
-const prisma = new PrismaClient();
+import { voteSchema } from '@/lib/schemas/election';
 
 async function getSessionData() {
   const cookieStore = await cookies();
@@ -25,18 +23,6 @@ async function getSessionData() {
     return null;
   }
 }
-
-const voteSchema = z.object({
-  electionId: z.string().min(1),
-  votes: z
-    .array(
-      z.object({
-        positionId: z.string().min(1),
-        candidateId: z.string().min(1),
-      })
-    )
-    .min(1, 'At least one vote is required'),
-});
 
 export async function POST(req: Request) {
   try {

@@ -1,19 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { generateVoterPassword } from '@/lib/utils/password';
 import { success, fail } from '@/lib/apiREsponse';
-import { z } from 'zod';
-
-const prisma = new PrismaClient();
-
-const voterSchema = z.object({
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
-  email: z.string().email(),
-  level: z.string().min(1),
-  studentId: z.string().min(1),
-});
+import { voterSchema } from '@/lib/schemas/voter';
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

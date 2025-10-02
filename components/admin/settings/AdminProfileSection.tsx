@@ -32,7 +32,12 @@ export default function AdminProfileSection({ admin }: AdminProfileSectionProps)
     setLoading(true);
     try {
       // Only include fields that have values
-      const payload: { email: string; newPassword?: string; confirmPassword?: string; currentPassword?: string } = { email: formData.email };
+      const payload: {
+        email: string;
+        newPassword?: string;
+        confirmPassword?: string;
+        currentPassword?: string;
+      } = { email: formData.email };
       if (formData.newPassword) {
         payload.newPassword = formData.newPassword;
         payload.confirmPassword = formData.confirmPassword;

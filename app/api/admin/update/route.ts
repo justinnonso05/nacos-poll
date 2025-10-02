@@ -1,11 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { success, fail } from '@/lib/apiREsponse';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import bcrypt from 'bcryptjs';
 import { updateSchema } from '@/lib/schemas/admin';
-
-const prisma = new PrismaClient();
 
 export async function PUT(req: Request) {
   try {
@@ -39,6 +37,7 @@ export async function PUT(req: Request) {
 
     return success('Admin role updated successfully.', admin);
   } catch (error) {
+    console.error(error);
     return fail('Failed to update admin.', null, 500);
   }
 }

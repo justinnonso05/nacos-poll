@@ -1,10 +1,8 @@
 import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import type { SessionStrategy } from 'next-auth';
-
-const prisma = new PrismaClient();
 
 // Define custom user type for your app
 type AuthUser = {

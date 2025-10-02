@@ -1,17 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { success, fail } from '@/lib/apiREsponse';
-import { z } from 'zod';
+import { positionSchema } from '@/lib/schemas/position';
 
-const prisma = new PrismaClient();
-
-const positionSchema = z.object({
-  name: z.string().min(1, 'Position name is required'),
-  description: z.string().optional(),
-  order: z.number().int().min(0).default(0),
-  maxCandidates: z.number().int().min(1).default(10),
-});
 
 export async function GET(req: Request) {
   try {

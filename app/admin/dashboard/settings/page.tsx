@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import ElectionManagementSection from '@/components/admin/settings/ElectionManagementSection';
@@ -10,8 +10,6 @@ import AssociationSection from '@/components/admin/settings/AssociationSection';
 import DataExportSection from '@/components/admin/settings/DataExportSection';
 import DangerZoneSection from '@/components/admin/settings/DangerZoneSection';
 import type { Election } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 function calculateElectionStatus(election: Election | null) {
   if (!election) return 'NO_ELECTION';

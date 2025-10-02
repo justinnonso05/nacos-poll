@@ -56,17 +56,17 @@ export default function CreateCandidateDialog({
     electionId: election.id,
     positionId: '',
   });
-  
+
   // File preview states
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedManifestoFile, setSelectedManifestoFile] = useState<File | null>(null);
   const [manifestoPreviewName, setManifestoPreviewName] = useState<string | null>(null);
-  
+
   // Upload states
   const [photoUploading, setPhotoUploading] = useState(false);
   const [manifestoUploading, setManifestoUploading] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manifestoInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,7 +97,7 @@ export default function CreateCandidateDialog({
   const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setSelectedPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -106,7 +106,7 @@ export default function CreateCandidateDialog({
   const handleManifestoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setSelectedManifestoFile(file);
     setManifestoPreviewName(file.name);
   };
@@ -114,7 +114,7 @@ export default function CreateCandidateDialog({
   // Upload photo
   const handlePhotoUpload = async () => {
     if (!selectedPhotoFile) return;
-    
+
     setPhotoUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('file', selectedPhotoFile);
@@ -126,7 +126,7 @@ export default function CreateCandidateDialog({
         body: formDataUpload,
       });
       const result = await response.json();
-      
+
       if (response.ok && result.url) {
         setFormData((prev) => ({ ...prev, photoUrl: result.url }));
         toast.success('Photo uploaded successfully!');
@@ -145,7 +145,7 @@ export default function CreateCandidateDialog({
   // Upload manifesto
   const handleManifestoUpload = async () => {
     if (!selectedManifestoFile) return;
-    
+
     setManifestoUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('file', selectedManifestoFile);
@@ -157,7 +157,7 @@ export default function CreateCandidateDialog({
         body: formDataUpload,
       });
       const result = await response.json();
-      
+
       if (response.ok && result.url) {
         setFormData((prev) => ({ ...prev, manifesto: result.url }));
         toast.success('Manifesto uploaded successfully!');
@@ -192,7 +192,7 @@ export default function CreateCandidateDialog({
       if (response.ok && result.status === 'success') {
         toast.success(result.message || 'Candidate created successfully');
         setOpen(false);
-        
+
         // Reset all states
         setFormData({
           name: '',
@@ -205,7 +205,7 @@ export default function CreateCandidateDialog({
         setPhotoPreview(null);
         setSelectedManifestoFile(null);
         setManifestoPreviewName(null);
-        
+
         onCandidateCreated?.();
       } else {
         toast.error(result.message || 'Failed to create candidate');
@@ -246,6 +246,7 @@ export default function CreateCandidateDialog({
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Full name of candidate"
+              className='h-11'
               required
             />
           </div>
@@ -296,9 +297,9 @@ export default function CreateCandidateDialog({
               onChange={handlePhotoFileChange}
               disabled={photoUploading}
               title="Select candidate photo"
-              className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
+              className="block w-full h-11 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
             />
-            
+
             {/* Photo Preview */}
             {photoPreview && (
               <div className="mt-2 space-y-2">
@@ -319,7 +320,7 @@ export default function CreateCandidateDialog({
                 </Button>
               </div>
             )}
-            
+
             {/* Uploaded Photo */}
             {formData.photoUrl && !photoPreview && (
               <div className="mt-2">
@@ -345,9 +346,9 @@ export default function CreateCandidateDialog({
               onChange={handleManifestoFileChange}
               disabled={manifestoUploading}
               title="Select manifesto document (PDF only)"
-              className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
+              className="block w-full h-11 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
             />
-            
+
             {/* Manifesto Preview */}
             {manifestoPreviewName && (
               <div className="mt-2 space-y-2">
@@ -365,7 +366,7 @@ export default function CreateCandidateDialog({
                 </Button>
               </div>
             )}
-            
+
             {/* Uploaded Manifesto */}
             {formData.manifesto && !manifestoPreviewName && (
               <div className="mt-2">

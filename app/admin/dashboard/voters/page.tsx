@@ -1,12 +1,10 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import VotersTable from '@/components/admin/voters/VotersTable';
 import VoterUpload from '@/components/admin/voters/VoterUpload';
 import CreateVoterDialog from '@/components/admin/voters/CreateVoterDialog';
-
-const prisma = new PrismaClient();
 
 export default async function VotersPage() {
   const session = await getServerSession(authOptions);

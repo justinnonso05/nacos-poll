@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { electionSchema } from '@/lib/schemas/election';
 import { success, fail } from '@/lib/apiREsponse';
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -33,6 +31,7 @@ export async function POST(req: Request) {
 
     return success('Election created successfully.', election, 201);
   } catch (error) {
+    console.error(error);
     return fail('Failed to create election.', null, 500);
   }
 }

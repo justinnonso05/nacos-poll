@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import Sidebar from '@/components/admin/Sidebar';
 import TopNav from '@/components/admin/TopNav';
 
@@ -12,7 +12,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/admin/login');
   }
 
-  const prisma = new PrismaClient();
   const rawAssociation = await prisma.association.findUnique({
     where: { id: session.user.associationId },
     select: { id: true, name: true, logoUrl: true },

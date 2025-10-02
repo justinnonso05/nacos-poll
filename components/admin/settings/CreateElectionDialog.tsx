@@ -101,18 +101,19 @@ export default function CreateElectionDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="title">Election Title</Label>
+            <Label htmlFor="title" className='mb-2'>Election Title</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Student Council Elections 2024"
+              className='h-11'
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className='mb-2'>Description</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -123,26 +124,28 @@ export default function CreateElectionDialog({
           </div>
 
           <div>
-            <Label htmlFor="startAt">Start Date & Time</Label>
+            <Label htmlFor="startAt" className='mb-2'>Start Date & Time</Label>
             <Input
               id="startAt"
               type="datetime-local"
               value={formData.startAt}
               onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
               min={getMinStartDate()}
+              className='h-11'
               required
             />
             <p className="text-xs text-muted-foreground mt-1">When voting should begin</p>
           </div>
 
           <div>
-            <Label htmlFor="endAt">End Date & Time</Label>
+            <Label htmlFor="endAt" className='mb-2'>End Date & Time</Label>
             <Input
               id="endAt"
               type="datetime-local"
               value={formData.endAt}
               onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
               min={getMinEndDate()}
+              className='h-11voter upload'
               required
             />
             <p className="text-xs text-muted-foreground mt-1">When voting should end</p>
