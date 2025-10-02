@@ -1,3 +1,4 @@
+import { prisma } from '@/lib/prisma'; // Import your Prisma client
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -13,10 +14,20 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Student Vote - Election Management',
-  description: 'Professional election management system for student associations',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Fetch association info directly from the DB using Prisma
+  const association = await prisma.association.findFirst({
+    select: { name: true, logoUrl: true },
+  });
+
+  return {
+    title: association?.name ? `${association.name} Poll` : 'Election Management System',
+    description: 'Election Management System',
+    icons: {
+      icon: association?.logoUrl || '/favicon.ico',
+    },
+  };
+}
 
 export default function RootLayout({
   children,
