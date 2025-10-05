@@ -89,7 +89,7 @@ export default function MobileSidebar({ association, open, onOpenChange }: Mobil
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-64 p-0">
+      <SheetContent side="left" className="w-64 p-0 z-600">
         {/* Hidden title for accessibility */}
         <VisuallyHidden>
           <SheetTitle>Navigation Menu</SheetTitle>

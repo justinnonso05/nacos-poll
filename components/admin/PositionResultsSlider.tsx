@@ -166,7 +166,7 @@ export default function PositionResultsSlider({
         </div>
       </CardHeader>
 
-      <CardContent className="p-6">
+      <CardContent className="px-2 py-4 sm:px-6 sm:py-6">
         {/* Candidates Results */}
         <div className="space-y-4 mb-6">
           {currentPosition.candidates.map((candidate, index) => (
@@ -287,11 +287,11 @@ export default function PositionResultsSlider({
               className="flex items-center gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous Position
+              Previous
             </Button>
 
             {/* Position Indicators */}
-            <div className="flex items-center gap-2">
+            <div className="items-center gap-2 hidden sm:flex">
               {positions.map((position, index) => (
                 <button
                   key={index}
@@ -313,7 +313,7 @@ export default function PositionResultsSlider({
               size="sm"
               className="flex items-center gap-2"
             >
-              Next Position
+              Next
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

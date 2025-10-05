@@ -245,7 +245,7 @@ export default async function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header - Responsive */}
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex flex-row sm:flex-row sm:items-start sm:justify-between gap-4">
             {/* Left side - Election Info */}
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2 truncate">

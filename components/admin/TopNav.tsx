@@ -42,7 +42,7 @@ export default function TopNav({ association }: TopNavProps) {
 
   return (
     <>
-      <header className="flex h-14 sm:h-16 items-center justify-between shadow-md border-b bg-card px-3 sm:px-6 z-500">
+      <header className="flex h-14 sm:h-16 items-center justify-between shadow-md border-b bg-card px-3 sm:px-6 z-10">
         <div className="flex items-center space-x-2 sm:space-x-4 flex-1">
           {/* Mobile menu button */}
           <Button
