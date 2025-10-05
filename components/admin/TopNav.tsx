@@ -1,8 +1,10 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+'use client';
+
+import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Menu } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +13,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import MobileSidebar from '@/components/admin/MobileSidebar';
+import { useSession } from 'next-auth/react';
 
-export default async function TopNav() {
-  const session = await getServerSession(authOptions);
+interface Association {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}
+
+interface TopNavProps {
+  association: Association;
+}
+
+export default function TopNav({ association }: TopNavProps) {
+  const { data: session } = useSession();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!session?.user) return null;
 
@@ -26,16 +41,25 @@ export default async function TopNav() {
       .toUpperCase() || 'AD';
 
   return (
-    <header className="flex h-16 items-center justify-between shadow-md border-b bg-card px-6 z-50">
-      <div className="flex items-center space-x-4 flex-1">
-        <h1 className="text-xl font-semibold">Election Dashboard</h1>
-      </div>
+    <>
+      <header className="flex h-14 sm:h-16 items-center justify-between shadow-md border-b bg-card px-3 sm:px-6 z-500">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-1">
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
 
-      {/* Search */}
-      <div className="flex items-center space-x-4">
+          <h1 className="text-base sm:text-xl font-semibold truncate">Election Dashboard</h1>
+        </div>
+
         {/* User Info */}
-        <div className="flex items-center space-x-3">
-          <div className="text-right hidden sm:block">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="hidden sm:block">
             <Badge
               variant={session.user.role === 'SUPERADMIN' ? 'default' : 'secondary'}
               className="text-xs"
@@ -46,8 +70,8 @@ export default async function TopNav() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer hover:opacity-80">
-                <AvatarFallback className="bg-primary text-primary-foreground">
+              <Avatar className="cursor-pointer hover:opacity-80 h-8 w-8 sm:h-10 sm:w-10">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -73,7 +97,14 @@ export default async function TopNav() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile Sidebar */}
+      <MobileSidebar
+        association={association}
+        open={mobileMenuOpen}
+        onOpenChange={setMobileMenuOpen}
+      />
+    </>
   );
 }

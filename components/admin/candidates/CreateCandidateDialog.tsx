@@ -37,14 +37,16 @@ interface Election {
   title: string;
 }
 
-interface CreateCandidateDialogProps {
+export interface CreateCandidateDialogProps {
   election: Election;
-  onCandidateCreated?: () => void;
+  onCandidateCreated: () => Promise<void>;
+  trigger: React.ReactElement;
 }
 
 export default function CreateCandidateDialog({
   election,
   onCandidateCreated,
+  trigger,
 }: CreateCandidateDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -223,12 +225,9 @@ export default function CreateCandidateDialog({
     : true;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Candidate
-        </Button>
+        {trigger}
       </DialogTrigger>
 
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">

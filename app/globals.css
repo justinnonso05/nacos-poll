@@ -149,3 +149,20 @@
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) hsl(var(--muted));
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Show scrollbar for desktop */
+.scrollbar-default {
+  -ms-overflow-style: auto;
+  scrollbar-width: auto;
+}
+.scrollbar-default::-webkit-scrollbar {
+  display: block;
+}

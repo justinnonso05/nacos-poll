@@ -191,7 +191,7 @@ export default async function AdminDashboard() {
 
   if (!election || !stats) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-6">
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -206,6 +206,7 @@ export default async function AdminDashboard() {
     );
   }
 
+  // Full date format for desktop
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
@@ -214,6 +215,16 @@ export default async function AdminDashboard() {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
+    });
+  };
+
+  // Short date format for mobile
+  const formatDateShort = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -231,85 +242,116 @@ export default async function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">{election.title}</h1>
-              <p className="text-muted-foreground mb-3">{election.association.name}</p>
-              <p className="text-sm text-muted-foreground mb-3">
+      <div className="max-w-7xl mx-auto">
+        {/* Header - Responsive */}
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            {/* Left side - Election Info */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2 truncate">
+                {election.title}
+              </h1>
+              <p className="text-sm text-muted-foreground mb-2 truncate">
+                {election.association.name}
+              </p>
+              
+              {/* Desktop date format */}
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                 {formatDate(election.startAt)} - {formatDate(election.endAt)}
               </p>
-              <Badge variant={electionStatus.variant}>{electionStatus.status}</Badge>
+              
+              {/* Mobile date format */}
+              <p className="sm:hidden text-xs text-muted-foreground mb-2">
+                {formatDateShort(election.startAt)} - {formatDateShort(election.endAt)}
+              </p>
+              
+              <Badge variant={electionStatus.variant} className="text-xs">
+                {electionStatus.status}
+              </Badge>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-foreground">{stats.voterTurnout}%</div>
-              <p className="text-sm text-muted-foreground">Voter Turnout</p>
+
+            {/* Right side - Turnout */}
+            <div className="text-left sm:text-right flex-shrink-0">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
+                {stats.voterTurnout}%
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">Voter Turnout</p>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {/* Stats Cards - Responsive Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+          {/* Registered Voters Card */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Registered Voters
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                <span className="hidden sm:inline">Registered Voters</span>
+                <span className="sm:hidden">Voters</span>
               </CardTitle>
-              <Users className="h-5 w-5 text-muted-foreground" />
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                 {stats.totalVoters.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Total eligible voters</p>
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                Total eligible voters
+              </p>
             </CardContent>
           </Card>
 
+          {/* Votes Cast Card */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Votes Cast
               </CardTitle>
-              <Vote className="h-5 w-5 text-muted-foreground" />
+              <Vote className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                 {stats.totalVotes.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                 {stats.totalVotes > 0 ? '+' : ''}
                 {stats.totalVotes} votes recorded
               </p>
             </CardContent>
           </Card>
 
+          {/* Candidates Card */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Candidates
               </CardTitle>
-              <UserCheck className="h-5 w-5 text-muted-foreground" />
+              <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats.totalCandidates}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+                {stats.totalCandidates}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                 Across {stats.totalPositions} positions
               </p>
             </CardContent>
           </Card>
 
+          {/* Turnout Rate Card */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Turnout Rate
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                <span className="hidden sm:inline">Turnout Rate</span>
+                <span className="sm:hidden">Turnout</span>
               </CardTitle>
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats.voterTurnout}%</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+                {stats.voterTurnout}%
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                 {stats.totalVoters - stats.totalVotes} voters remaining
               </p>
             </CardContent>
@@ -317,25 +359,27 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Position Results Slider */}
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6 md:mb-8">
           <PositionResultsSlider
             positions={positionResults}
             isElectionActive={electionStatus.isActive}
           />
         </div>
 
-        {/* Charts Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* Charts Row - Responsive Grid */}
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {/* Overall Turnout Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-foreground">Overall Voter Turnout</CardTitle>
-              <p className="text-sm text-muted-foreground">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg text-foreground">
+                Overall Voter Turnout
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {stats.totalVotes.toLocaleString()} of {stats.totalVoters.toLocaleString()} voters
                 have participated
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <TurnoutChart
                 voted={stats.totalVotes}
                 notVoted={stats.totalVoters - stats.totalVotes}
@@ -346,31 +390,20 @@ export default async function AdminDashboard() {
 
           {/* Turnout by Level */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-foreground">Turnout by Student Level</CardTitle>
-              <p className="text-sm text-muted-foreground">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg text-foreground">
+                <span className="hidden sm:inline">Turnout by Student Level</span>
+                <span className="sm:hidden">Turnout by Level</span>
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Participation breakdown by academic level
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <TurnoutByLevelChart data={turnoutByLevel} />
             </CardContent>
           </Card>
         </div>
-
-        {/* Live Updates Notice */}
-        {/* <div className="mt-8">
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <p className="text-sm text-foreground">
-                  Live updates - Data refreshes automatically as votes are cast
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
       </div>
     </div>
   );

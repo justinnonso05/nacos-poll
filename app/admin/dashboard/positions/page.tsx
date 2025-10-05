@@ -31,10 +31,12 @@ export default async function PositionsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Electoral Positions</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          Electoral Positions
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Manage the electoral positions available in your elections
         </p>
       </div>

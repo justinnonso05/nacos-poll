@@ -26,6 +26,7 @@ import {
   AlertTriangle,
   FileText,
   FileType2,
+  Plus,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -99,9 +100,9 @@ export default function CandidatesTable({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
 
-  // Pagination
+  // Pagination - Reduced for mobile
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 15;
 
   // Filter candidates
   const filteredCandidates = candidates.filter((candidate) => {
@@ -190,8 +191,6 @@ export default function CandidatesTable({
   };
 
   const canDeleteCandidate = candidateToDelete && candidateToDelete._count.votes === 0;
-
-  // Always get the first election, if any
   const currentElection = elections.length > 0 ? elections[0] : null;
 
   // State for manifesto preview modal
@@ -208,33 +207,42 @@ export default function CandidatesTable({
   // Helper to get file type icon
   const getManifestoIcon = (url: string) => {
     if (!url) return null;
-    if (url.endsWith('.pdf')) return <FileText className="h-5 w-5 text-red-600" />;
+    if (url.endsWith('.pdf')) return <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />;
     if (url.endsWith('.doc') || url.endsWith('.docx'))
-      return <FileType2 className="h-5 w-5 text-blue-600" />;
-    return <FileText className="h-5 w-5 text-muted-foreground" />;
+      return <FileType2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />;
+    return <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />;
   };
 
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>All Candidates ({filteredCandidates.length})</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="text-lg sm:text-xl">
+              Candidates ({filteredCandidates.length})
+            </CardTitle>
             {currentElection ? (
               <CreateCandidateDialog
                 election={currentElection}
                 onCandidateCreated={() => fetchCandidates(currentElection.id)}
+                trigger={
+                  <Button size="sm" className="w-full sm:w-auto">
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Add Candidate</span>
+                    <span className="sm:hidden">Add</span>
+                  </Button>
+                }
               />
             ) : (
-              <span className="text-muted-foreground text-sm">No election available</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">No election available</span>
             )}
           </div>
         </CardHeader>
 
-        <CardContent>
-          {/* Filters */}
-          <div className="flex gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
+          {/* Search Filter */}
+          <div className="px-4 sm:px-0 mb-4 sm:mb-6">
+            <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search candidates..."
@@ -245,95 +253,190 @@ export default function CandidatesTable({
             </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Candidate</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Votes</TableHead>
-                <TableHead>Manifesto</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
+          {/* Mobile Card View */}
+          <div className="block sm:hidden">
+            <div className="space-y-3 p-4">
               {currentCandidates
                 .sort((a, b) => a.position.order - b.position.order)
                 .map((candidate) => (
-                  <TableRow key={candidate.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={candidate.photoUrl || undefined} alt={candidate.name} />
-                          <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
-                        </Avatar>
-                        <div className="font-medium">{candidate.name}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{candidate.position.name}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Vote className="h-4 w-4 text-muted-foreground" />
-                        <span>{candidate._count.votes}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {candidate.manifesto && candidate.manifesto.startsWith('http') ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center gap-2"
-                          onClick={() => {
-                            setManifestoUrl(candidate.manifesto);
-                            setShowManifestoModal(true);
-                          }}
-                          title="View Manifesto"
-                        >
-                          {getManifestoIcon(candidate.manifesto)}
-                          <span className="sr-only">View Manifesto</span>
-                        </Button>
-                      ) : (
-                        <div className="text-sm text-muted-foreground max-w-xs truncate">
-                          {candidate.manifesto || 'No manifesto provided'}
+                  <Card key={candidate.id} className="border border-border">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-3 flex-1 min-w-0">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={candidate.photoUrl || undefined} alt={candidate.name} />
+                            <AvatarFallback className="text-xs">
+                              {getInitials(candidate.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{candidate.name}</div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {candidate.position.name}
+                              </Badge>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Vote className="h-3 w-3" />
+                                <span>{candidate._count.votes}</span>
+                              </div>
+                            </div>
+                            {candidate.manifesto && (
+                              <div className="mt-2">
+                                {candidate.manifesto.startsWith('http') ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-xs"
+                                    onClick={() => {
+                                      setManifestoUrl(candidate.manifesto);
+                                      setShowManifestoModal(true);
+                                    }}
+                                  >
+                                    {getManifestoIcon(candidate.manifesto)}
+                                    <span className="ml-1">View Manifesto</span>
+                                  </Button>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {candidate.manifesto}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" disabled={loading}>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Candidate
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteClick(candidate)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteClick(candidate)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-            </TableBody>
-          </Table>
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Candidate</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead className="hidden lg:table-cell">Votes</TableHead>
+                  <TableHead className="hidden md:table-cell">Manifesto</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {currentCandidates
+                  .sort((a, b) => a.position.order - b.position.order)
+                  .map((candidate) => (
+                    <TableRow key={candidate.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={candidate.photoUrl || undefined} alt={candidate.name} />
+                            <AvatarFallback className="text-xs">
+                              {getInitials(candidate.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">{candidate.name}</div>
+                            <div className="lg:hidden flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                              <Vote className="h-3 w-3" />
+                              <span>{candidate._count.votes} votes</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {candidate.position.name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-1">
+                          <Vote className="h-4 w-4 text-muted-foreground" />
+                          <span>{candidate._count.votes}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {candidate.manifesto && candidate.manifesto.startsWith('http') ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-2 h-8"
+                            onClick={() => {
+                              setManifestoUrl(candidate.manifesto);
+                              setShowManifestoModal(true);
+                            }}
+                            title="View Manifesto"
+                          >
+                            {getManifestoIcon(candidate.manifesto)}
+                            <span className="sr-only">View Manifesto</span>
+                          </Button>
+                        ) : (
+                          <div className="text-sm text-muted-foreground max-w-xs truncate">
+                            {candidate.manifesto || 'No manifesto'}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" disabled={loading} className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewCandidate(candidate)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Candidate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteClick(candidate)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {currentCandidates.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {searchTerm || selectedElection !== 'all'
                   ? 'No candidates found matching your criteria'
                   : 'No candidates found'}
@@ -343,26 +446,30 @@ export default function CandidatesTable({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-
-                {Math.min(startIndex + itemsPerPage, filteredCandidates.length)} of{' '}
-                {filteredCandidates.length} candidates
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4 sm:px-0">
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                <span className="hidden sm:inline">Showing </span>
+                {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCandidates.length)} of{' '}
+                {filteredCandidates.length}
+                <span className="hidden sm:inline"> candidates</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
+                  className="h-8 px-2 sm:px-3"
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Previous</span>
                 </Button>
 
-                <span className="text-sm">
-                  Page {currentPage} of {totalPages}
+                <span className="text-xs sm:text-sm px-2">
+                  <span className="hidden sm:inline">Page </span>
+                  {currentPage}
+                  <span className="hidden sm:inline"> of {totalPages}</span>
                 </span>
 
                 <Button
@@ -370,9 +477,10 @@ export default function CandidatesTable({
                   size="sm"
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
+                  className="h-8 px-2 sm:px-3"
                 >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <span className="hidden sm:inline mr-1">Next</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -382,9 +490,9 @@ export default function CandidatesTable({
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="mx-4 sm:mx-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
               {canDeleteCandidate ? (
                 <>
                   <Trash2 className="h-5 w-5 text-destructive" />
@@ -397,7 +505,7 @@ export default function CandidatesTable({
                 </>
               )}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {canDeleteCandidate ? (
                 <>
                   Are you sure you want to delete <strong>{candidateToDelete?.name}</strong>? This
@@ -420,18 +528,24 @@ export default function CandidatesTable({
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => {
                 setShowDeleteDialog(false);
                 setCandidateToDelete(null);
               }}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             {canDeleteCandidate && (
-              <Button variant="destructive" onClick={handleDeleteCandidate} disabled={loading}>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteCandidate}
+                disabled={loading}
+                className="w-full sm:w-auto"
+              >
                 {loading ? 'Deleting...' : 'Delete Candidate'}
               </Button>
             )}
@@ -450,21 +564,21 @@ export default function CandidatesTable({
 
       {/* Manifesto Preview Modal */}
       <Dialog open={showManifestoModal} onOpenChange={setShowManifestoModal}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Manifesto Preview</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">Manifesto Preview</DialogTitle>
           </DialogHeader>
           {manifestoUrl ? (
             <iframe
               src={`https://docs.google.com/gview?url=${encodeURIComponent(manifestoUrl)}&embedded=true`}
               width="100%"
-              height="600px"
+              height="500px"
               frameBorder="0"
               title="Manifesto Preview"
               className="rounded border"
             />
           ) : (
-            <div className="text-muted-foreground text-center py-8">No manifesto available</div>
+            <div className="text-muted-foreground text-center py-8 text-sm">No manifesto available</div>
           )}
         </DialogContent>
       </Dialog>

@@ -15,18 +15,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface CreatePositionDialogProps {
-  onPositionCreated?: () => void;
+export interface CreatePositionDialogProps {
+  onPositionCreated: () => Promise<void>;
+  trigger: React.ReactElement;
 }
 
-export default function CreatePositionDialog({ onPositionCreated }: CreatePositionDialogProps) {
+export default function CreatePositionDialog({
+  onPositionCreated,
+  trigger,
+}: CreatePositionDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    order: 0,
-    maxCandidates: 10,
+    order: 1,
+    maxCandidates: 1,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,8 +52,8 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
         setFormData({
           name: '',
           description: '',
-          order: 0,
-          maxCandidates: 10,
+          order: 1,
+          maxCandidates: 1,
         });
         onPositionCreated?.();
       } else {
@@ -64,14 +68,9 @@ export default function CreatePositionDialog({ onPositionCreated }: CreatePositi
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Position
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="mx-4 sm:mx-0 max-w-md">
         <DialogHeader>
           <DialogTitle>Add New Position</DialogTitle>
         </DialogHeader>
