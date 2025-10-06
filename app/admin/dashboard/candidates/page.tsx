@@ -20,7 +20,20 @@ export default async function CandidatesPage() {
     redirect('/admin/login');
   }
 
-  const [candidatesData, elections, positions] = await Promise.all([
+  // Fetch positions for the current association
+  const positions = await prisma.position.findMany({
+    where: { associationId: admin.associationId },
+    select: {
+      id: true,
+      name: true,
+      order: true,
+      maxCandidates: true,
+      _count: { select: { candidates: true } },
+    },
+    orderBy: { order: 'asc' },
+  });
+
+  const [candidatesData, elections] = await Promise.all([
     prisma.candidate.findMany({
       where: {
         election: {
@@ -55,13 +68,6 @@ export default async function CandidatesPage() {
       where: { associationId: admin.associationId },
       select: { id: true, title: true },
       orderBy: { createdAt: 'desc' },
-    }),
-
-    // Add positions query
-    prisma.position.findMany({
-      where: { associationId: admin.associationId },
-      select: { id: true, name: true, description: true, order: true },
-      orderBy: { order: 'asc' },
     }),
   ]);
 

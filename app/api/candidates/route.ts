@@ -148,7 +148,7 @@ export async function POST(req: Request) {
         manifesto,
         photoUrl:
           photoUrl ||
-          'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=face',
+          'https://res.cloudinary.com/dpyxbvcyl/image/upload/v1759396141/UNDECIDED_qsubo3.png',
         electionId,
         positionId,
       },

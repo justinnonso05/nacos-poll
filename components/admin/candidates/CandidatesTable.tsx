@@ -78,6 +78,10 @@ interface Position {
   id: string;
   name: string;
   order: number;
+  maxCandidates: number;
+  _count: {
+    candidates: number;
+  };
 }
 
 interface CandidatesTableProps {
@@ -224,6 +228,7 @@ export default function CandidatesTable({
             {currentElection ? (
               <CreateCandidateDialog
                 election={currentElection}
+                positions={positions} // Pass positions here
                 onCandidateCreated={() => fetchCandidates(currentElection.id)}
                 trigger={
                   <Button size="sm" className="w-full sm:w-auto">

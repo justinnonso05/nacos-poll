@@ -156,7 +156,7 @@ export default function ManageAdminsPage() {
 
       {/* Created Admin Credentials Dialog */}
       {createdAdmin && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 bg-background-50">
           <CardHeader>
             <CardTitle className="text-green-800">Admin Created Successfully!</CardTitle>
             <CardDescription>
@@ -168,7 +168,7 @@ export default function ManageAdminsPage() {
               <div>
                 <label className="text-sm font-medium">Email:</label>
                 <div className="flex items-center space-x-2">
-                  <code className="bg-white px-2 py-1 rounded text-sm">{createdAdmin.email}</code>
+                  <code className="bg-background border px-2 py-1 rounded text-sm">{createdAdmin.email}</code>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -181,7 +181,7 @@ export default function ManageAdminsPage() {
               <div>
                 <label className="text-sm font-medium">Password:</label>
                 <div className="flex items-center space-x-2">
-                  <code className="bg-white px-2 py-1 rounded text-sm">
+                  <code className="bg-background border px-2 py-1 rounded text-sm">
                     {showPassword ? createdAdmin.password : '••••••••••••'}
                   </code>
                   <Button size="sm" variant="ghost" onClick={() => setShowPassword(!showPassword)}>

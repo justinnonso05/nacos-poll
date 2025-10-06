@@ -39,18 +39,19 @@ interface Election {
 
 export interface CreateCandidateDialogProps {
   election: Election;
+  positions: Position[]; // Add this prop
   onCandidateCreated: () => Promise<void>;
   trigger: React.ReactElement;
 }
 
 export default function CreateCandidateDialog({
   election,
+  positions, // Use this prop
   onCandidateCreated,
   trigger,
 }: CreateCandidateDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [positions, setPositions] = useState<Position[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     manifesto: '',
@@ -72,28 +73,7 @@ export default function CreateCandidateDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manifestoInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (open) {
-      fetchPositions();
-      setFormData((prev) => ({
-        ...prev,
-        electionId: election.id,
-      }));
-    }
-  }, [open, election.id]);
-
-  const fetchPositions = async () => {
-    try {
-      const response = await fetch('/api/positions');
-      const result = await response.json();
-
-      if (response.ok && result.status === 'success') {
-        setPositions(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch positions:', error);
-    }
-  };
+  // Removed fetchPositions useEffect
 
   // Handle photo file selection for preview
   const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

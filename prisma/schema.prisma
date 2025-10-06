@@ -4,110 +4,110 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  directUrl = env("DIRECT_DATABASE_URL")   // Aiven direct for migrations
-  url       = env("DATABASE_URL")          // Data Proxy for runtime
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model Association {
-  id          String      @id @default(uuid())
-  name        String      @unique
+  id          String     @id @default(uuid())
+  name        String     @unique
   description String?
   logoUrl     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   admins      Admin[]
-  voters      Voter[]
   elections   Election[]
-  positions   Position[] 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  positions   Position[]
+  voters      Voter[]
 }
 
 model Admin {
-  id             String      @id @default(uuid())
-  email          String      @unique
-  passwordHash   String
-  role           AdminRole   // SUPERADMIN or ADMIN
-  associationId  String
-  association    Association @relation(fields: [associationId], references: [id])
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-}
- 
-enum AdminRole {
-  SUPERADMIN
-  ADMIN
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  role          AdminRole
+  associationId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  association   Association @relation(fields: [associationId], references: [id])
 }
 
 model Voter {
-  id             String      @id @default(uuid())
-  email          String      @unique
-  password       String
-  first_name     String
-  last_name      String
-  level          String
-  studentId      String
-  hasVoted       Boolean     @default(false)
-  associationId  String
-  association    Association @relation(fields: [associationId], references: [id])
-  votes          Vote[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String      @id @default(uuid())
+  email         String      @unique
+  studentId     String
+  hasVoted      Boolean     @default(false)
+  associationId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  first_name    String
+  last_name     String
+  password      String
+  level         String
+  votes         Vote[]
+  association   Association @relation(fields: [associationId], references: [id])
 }
 
 model Election {
-  id             String      @id @default(uuid())
-  title          String
-  description    String?
-  associationId  String
-  association    Association @relation(fields: [associationId], references: [id])
-  candidates     Candidate[]
-  votes          Vote[]
-  startAt        DateTime
-  endAt          DateTime
-  isActive       Boolean     @default(false)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String      @id @default(uuid())
+  title         String
+  description   String?
+  associationId String
+  startAt       DateTime
+  endAt         DateTime
+  isActive      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  candidates    Candidate[]
+  association   Association @relation(fields: [associationId], references: [id])
+  votes         Vote[]
 }
 
 model Position {
-  id             String      @id @default(uuid())
-  name           String
-  description    String?
-  order          Int         @default(0)
-  maxCandidates  Int         @default(10)
-  associationId  String
-  association    Association @relation(fields: [associationId], references: [id])
-  candidates     Candidate[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String      @id @default(uuid())
+  name          String
+  description   String?
+  order         Int         @default(0)
+  maxCandidates Int         @default(10)
+  associationId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  candidates    Candidate[]
+  association   Association @relation(fields: [associationId], references: [id])
 
-  @@unique([name, associationId]) // Unique position per association
+  @@unique([name, associationId])
 }
 
 model Candidate {
-  id           String      @id @default(uuid())
-  name         String
-  manifesto    String?
-  photoUrl     String?     @default("https://res.cloudinary.com/dpyxbvcyl/image/upload/v1759396141/UNDECIDED_qsubo3.png")
-  electionId   String
-  election     Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  positionId   String
-  position     Position    @relation(fields: [positionId], references: [id])
-  votes        Vote[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id         String   @id @default(uuid())
+  name       String
+  manifesto  String?
+  photoUrl   String?  @default("https://res.cloudinary.com/dpyxbvcyl/image/upload/v1759396141/UNDECIDED_qsubo3.png")
+  electionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  positionId String
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  position   Position @relation(fields: [positionId], references: [id])
+  votes      Vote[]
 
   @@unique([electionId, positionId, name])
 }
 
 model Vote {
-  id           String      @id @default(uuid())
-  voterId      String
-  voter        Voter       @relation(fields: [voterId], references: [id], onDelete: Cascade)
-  electionId   String
-  election     Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  candidateId  String
-  candidate    Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  createdAt    DateTime    @default(now())
+  id          String    @id @default(uuid())
+  voterId     String
+  electionId  String
+  candidateId String
+  createdAt   DateTime  @default(now())
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  voter       Voter     @relation(fields: [voterId], references: [id], onDelete: Cascade)
 
   @@unique([voterId, electionId, candidateId])
+}
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
 }
