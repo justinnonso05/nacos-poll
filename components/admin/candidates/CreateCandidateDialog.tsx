@@ -46,7 +46,7 @@ export interface CreateCandidateDialogProps {
 
 export default function CreateCandidateDialog({
   election,
-  positions, // Use this prop
+  positions,
   onCandidateCreated,
   trigger,
 }: CreateCandidateDialogProps) {
@@ -93,6 +93,19 @@ export default function CreateCandidateDialog({
     setManifestoPreviewName(file.name);
   };
 
+  // Helper: robustly extract uploaded file URL from API response
+  const getUploadedUrl = (res: any): string | undefined => {
+    if (!res) return undefined;
+    return (
+      res?.data?.url ??
+      res?.data?.upload?.url ??
+      res?.upload?.url ??
+      res?.url ??
+      res?.secure_url ??
+      undefined
+    );
+  };
+
   // Upload photo
   const handlePhotoUpload = async () => {
     if (!selectedPhotoFile) return;
@@ -108,14 +121,15 @@ export default function CreateCandidateDialog({
         body: formDataUpload,
       });
       const result = await response.json();
+      const url = getUploadedUrl(result);
 
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, photoUrl: result.url }));
+      if ((response.ok && url) || result?.status === 'success') {
+        setFormData((prev) => ({ ...prev, photoUrl: url ?? prev.photoUrl }));
         toast.success('Photo uploaded successfully!');
         setSelectedPhotoFile(null);
         setPhotoPreview(null);
       } else {
-        toast.error(result.error || 'Photo upload failed');
+        toast.error(result?.message || result?.error || 'Photo upload failed');
       }
     } catch (error) {
       toast.error('Photo upload error');
@@ -139,14 +153,15 @@ export default function CreateCandidateDialog({
         body: formDataUpload,
       });
       const result = await response.json();
+      const url = getUploadedUrl(result);
 
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, manifesto: result.url }));
+      if ((response.ok && url) || result?.status === 'success') {
+        setFormData((prev) => ({ ...prev, manifesto: url ?? prev.manifesto }));
         toast.success('Manifesto uploaded successfully!');
         setSelectedManifestoFile(null);
         setManifestoPreviewName(null);
       } else {
-        toast.error(result.error || 'Manifesto upload failed');
+        toast.error(result?.message || result?.error || 'Manifesto upload failed');
       }
     } catch (error) {
       toast.error('Manifesto upload error');
@@ -155,43 +170,84 @@ export default function CreateCandidateDialog({
     }
   };
 
+  // Submit flow: when creating candidate and then uploading manifesto, prefer reading upload success via status
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Step 1: Create candidate first (without manifesto processing)
       const response = await fetch('/api/candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           photoUrl: formData.photoUrl || undefined,
+          // Don't include manifesto URL yet, we'll process it after candidate creation
+          manifesto: undefined,
         }),
       });
 
       const result = await response.json();
 
-      if (response.ok && result.status === 'success') {
-        toast.success(result.message || 'Candidate created successfully');
-        setOpen(false);
-
-        // Reset all states
-        setFormData({
-          name: '',
-          manifesto: '',
-          photoUrl: '',
-          electionId: election.id,
-          positionId: '',
-        });
-        setSelectedPhotoFile(null);
-        setPhotoPreview(null);
-        setSelectedManifestoFile(null);
-        setManifestoPreviewName(null);
-
-        onCandidateCreated?.();
-      } else {
+      if (!response.ok || result.status !== 'success') {
         toast.error(result.message || 'Failed to create candidate');
+        setLoading(false);
+        return;
       }
+
+      const candidateId = result.data.id; // Get the created candidate ID
+
+      // Step 2: Upload and process manifesto if one was selected (use unified extractor)
+      if (selectedManifestoFile) {
+        setManifestoUploading(true);
+
+        const manifestoFormData = new FormData();
+        manifestoFormData.append('file', selectedManifestoFile);
+        manifestoFormData.append('type', 'manifesto');
+        manifestoFormData.append('candidateId', candidateId); // Now we have the candidate ID!
+
+        try {
+          const manifestoResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: manifestoFormData,
+          });
+
+          const manifestoResult = await manifestoResponse.json();
+          const manifestoUrl = getUploadedUrl(manifestoResult);
+
+          if ((manifestoResponse.ok && manifestoUrl) || manifestoResult?.status === 'success') {
+            toast.success('Candidate created and manifesto processed successfully!');
+          } else {
+            toast.warning(
+              `Candidate created but manifesto processing failed: ${manifestoResult?.message || manifestoResult?.error}`
+            );
+          }
+        } catch (manifestoError) {
+          toast.warning('Candidate created but manifesto upload failed');
+        } finally {
+          setManifestoUploading(false);
+        }
+      } else {
+        toast.success(result.message || 'Candidate created successfully');
+      }
+
+      setOpen(false);
+
+      // Reset all states
+      setFormData({
+        name: '',
+        manifesto: '',
+        photoUrl: '',
+        electionId: election.id,
+        positionId: '',
+      });
+      setSelectedPhotoFile(null);
+      setPhotoPreview(null);
+      setSelectedManifestoFile(null);
+      setManifestoPreviewName(null);
+
+      onCandidateCreated?.();
     } catch (error) {
       toast.error('Something went wrong');
     } finally {
@@ -315,7 +371,7 @@ export default function CreateCandidateDialog({
             )}
           </div>
 
-          {/* Manifesto Upload Section */}
+          {/* Manifesto Upload Section - Updated */}
           <div>
             <Label className="mb-2">Manifesto Document (PDF only)</Label>
             <input
@@ -323,26 +379,21 @@ export default function CreateCandidateDialog({
               accept=".pdf"
               ref={manifestoInputRef}
               onChange={handleManifestoFileChange}
-              disabled={manifestoUploading}
+              disabled={manifestoUploading || loading}
               title="Select manifesto document (PDF only)"
               className="block w-full h-11 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-muted file:text-muted-foreground"
             />
 
             {/* Manifesto Preview */}
             {manifestoPreviewName && (
-              <div className="mt-2 space-y-2">
+              <div className="mt-2">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-red-600" />
                   <span className="text-sm">{manifestoPreviewName}</span>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleManifestoUpload}
-                  disabled={manifestoUploading}
-                >
-                  {manifestoUploading ? 'Uploading...' : 'Upload Manifesto'}
-                </Button>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Manifesto will be processed after candidate creation
+                </p>
               </div>
             )}
 
@@ -360,6 +411,10 @@ export default function CreateCandidateDialog({
                 </Button>
                 <p className="text-sm text-green-600 mt-1">✓ Manifesto uploaded</p>
               </div>
+            )}
+
+            {manifestoUploading && (
+              <p className="text-sm text-blue-600 mt-1">Processing manifesto...</p>
             )}
           </div>
 

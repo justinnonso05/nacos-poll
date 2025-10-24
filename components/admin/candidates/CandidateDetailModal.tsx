@@ -150,15 +150,28 @@ export default function CandidateDetailModal({
     });
   };
 
-  // Handle image upload
+  // Helper: robustly extract uploaded file URL from API response
+  const getUploadedUrl = (res: any): string | undefined => {
+    if (!res) return undefined;
+    return (
+      res?.data?.url ??
+      res?.data?.upload?.url ??
+      res?.upload?.url ??
+      res?.url ??
+      res?.secure_url ??
+      undefined
+    );
+  };
+
+  // Handle image upload (used when uploading directly without preview)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !candidate) return;
     setUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
     formDataUpload.append('type', 'candidate');
-    formDataUpload.append('candidateId', candidate?.id || '');
+    formDataUpload.append('candidateId', candidate.id);
 
     try {
       const response = await fetch('/api/upload', {
@@ -166,35 +179,30 @@ export default function CandidateDetailModal({
         body: formDataUpload,
       });
       const result = await response.json();
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, photoUrl: result.url }));
+      const url = getUploadedUrl(result);
+
+      // Accept both HTTP OK and our API's success payload
+      if ((response.ok && url) || result?.status === 'success') {
+        setFormData((prev) => ({ ...prev, photoUrl: url ?? prev.photoUrl }));
         toast.success('Image uploaded!');
       } else {
-        toast.error(result.error || 'Upload failed');
+        toast.error(result?.message || result?.error || 'Upload failed');
       }
-    } catch (error) {
+    } catch (err) {
       toast.error('Upload error');
     } finally {
       setUploading(false);
     }
   };
 
-  // Handle photo file selection
-  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSelectedPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
-  };
-
-  // Handle photo upload
+  // Handle photo upload (from preview flow)
   const handlePhotoUpload = async () => {
-    if (!selectedPhotoFile) return;
+    if (!selectedPhotoFile || !candidate) return;
     setUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('file', selectedPhotoFile);
     formDataUpload.append('type', 'candidate');
-    formDataUpload.append('candidateId', candidate?.id || '');
+    formDataUpload.append('candidateId', candidate.id);
 
     try {
       const response = await fetch('/api/upload', {
@@ -202,13 +210,15 @@ export default function CandidateDetailModal({
         body: formDataUpload,
       });
       const result = await response.json();
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, photoUrl: result.url }));
+      const url = getUploadedUrl(result);
+
+      if ((response.ok && url) || result?.status === 'success') {
+        setFormData((prev) => ({ ...prev, photoUrl: url ?? prev.photoUrl }));
         toast.success('Image uploaded!');
         setSelectedPhotoFile(null);
         setPhotoPreview(null);
       } else {
-        toast.error(result.error || 'Upload failed');
+        toast.error(result?.message || result?.error || 'Upload failed');
       }
     } catch (error) {
       toast.error('Upload error');
@@ -217,22 +227,14 @@ export default function CandidateDetailModal({
     }
   };
 
-  // Handle manifesto file selection
-  const handleManifestoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSelectedManifestoFile(file);
-    setManifestoPreviewName(file.name);
-  };
-
   // Handle manifesto upload
   const handleManifestoUpload = async () => {
-    if (!selectedManifestoFile) return;
+    if (!selectedManifestoFile || !candidate) return;
     setManifestoUploading(true);
     const formDataUpload = new FormData();
     formDataUpload.append('file', selectedManifestoFile);
     formDataUpload.append('type', 'manifesto');
-    formDataUpload.append('candidateId', candidate?.id || '');
+    formDataUpload.append('candidateId', candidate.id);
 
     try {
       const response = await fetch('/api/upload', {
@@ -240,19 +242,41 @@ export default function CandidateDetailModal({
         body: formDataUpload,
       });
       const result = await response.json();
-      if (response.ok && result.url) {
-        setFormData((prev) => ({ ...prev, manifesto: result.url }));
+      const url = getUploadedUrl(result);
+
+      if ((response.ok && url) || result?.status === 'success') {
+        setFormData((prev) => ({ ...prev, manifesto: url ?? prev.manifesto }));
         toast.success('Manifesto uploaded!');
         setSelectedManifestoFile(null);
         setManifestoPreviewName(null);
       } else {
-        toast.error(result.error || 'Manifesto upload failed');
+        toast.error(result?.message || result?.error || 'Manifesto upload failed');
       }
     } catch (error) {
       toast.error('Manifesto upload error');
     } finally {
       setManifestoUploading(false);
     }
+  };
+
+  // Handle change from the photo file input: set file and preview
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) return;
+    setSelectedPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoPreview(String(reader.result ?? ''));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle change from the manifesto file input: set file and filename preview
+  const handleManifestoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) return;
+    setSelectedManifestoFile(file);
+    setManifestoPreviewName(file.name);
   };
 
   if (!candidate) return null;
