@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CandidateManifestoCard } from '@/components/manifesto//CandidateManifestoCard';
-import { ManifestoQAChat } from '@/components/manifesto//ManifestoQAChat';
-import { FrequentlyAsked } from '@/components/manifesto/FrequentlyAsked';
+import { CandidateManifestoCard } from './CandidateManifestoCard';
+import { ManifestoQAChat } from './ManifestoQAChat';
+import { FrequentlyAsked } from './FrequentlyAsked';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, MessageSquare, HelpCircle, BookOpen } from 'lucide-react';
 
@@ -36,37 +36,39 @@ export function ManifestoQAInterface({ electionId, candidates }: ManifestoQAInte
   }, {} as Record<string, Candidate[]>);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Tabs defaultValue="manifestos" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="manifestos" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Manifestos
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsTrigger value="manifestos" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+            <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">Manifestos</span>
+            <span className="xs:hidden">Docs</span>
           </TabsTrigger>
-          <TabsTrigger value="qa" className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            Ask Questions
+          <TabsTrigger value="qa" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+            <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">Ask Questions</span>
+            <span className="xs:hidden">Q&A</span>
           </TabsTrigger>
-          <TabsTrigger value="faq" className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4" />
-            FAQ
+          <TabsTrigger value="faq" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+            <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>FAQ</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="manifestos" className="space-y-6">
+        <TabsContent value="manifestos" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
           {Object.entries(groupedCandidates).map(([position, positionCandidates]) => (
             <Card key={position}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  {position}
-                  <span className="text-sm font-normal text-muted-foreground">
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="truncate">{position}</span>
+                  <span className="text-xs sm:text-sm font-normal text-muted-foreground whitespace-nowrap">
                     ({positionCandidates.length} candidate{positionCandidates.length !== 1 ? 's' : ''})
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <CardContent className="pt-0 px-2">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                   {positionCandidates.map((candidate) => (
                     <CandidateManifestoCard
                       key={candidate.id}
@@ -87,7 +89,7 @@ export function ManifestoQAInterface({ electionId, candidates }: ManifestoQAInte
           ))}
         </TabsContent>
 
-        <TabsContent value="qa">
+        <TabsContent value="qa" className="mt-4 sm:mt-6">
           <ManifestoQAChat 
             electionId={electionId}
             candidates={candidates}
@@ -96,7 +98,7 @@ export function ManifestoQAInterface({ electionId, candidates }: ManifestoQAInte
           />
         </TabsContent>
 
-        <TabsContent value="faq">
+        <TabsContent value="faq" className="mt-4 sm:mt-6">
           <FrequentlyAsked 
             electionId={electionId}
             candidates={candidates}

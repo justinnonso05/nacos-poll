@@ -62,6 +62,7 @@ model Election {
   association   Association @relation(fields: [associationId], references: [id])
   votes         Vote[]
   manifestoEmbeddings ManifestoEmbedding[] // Add this relation
+  frequentlyAskedQuestions FrequentlyAskedQuestion[] // Add this line
 }
 
 model Position {
@@ -124,6 +125,22 @@ model ManifestoEmbedding {
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
   @@map("manifesto_embeddings")
+}
+
+model FrequentlyAskedQuestion {
+  id         String   @id @default(uuid())
+  electionId String
+  question   String   @db.Text
+  answer     String   @db.Text
+  sources    Json     // Store source information as JSON
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  
+  @@unique([electionId, question])
+  @@map("frequently_asked_questions")
 }
 
 enum AdminRole {

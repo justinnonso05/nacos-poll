@@ -108,6 +108,24 @@ export class ManifestoVectorStore {
     }
   }
 
+  static async updateManifesto(candidateId: string, electionId: string, manifestoText: string) {
+    try {
+      console.log(`🔄 Updating manifesto for candidate ${candidateId}`);
+      
+      // First remove existing manifesto
+      await this.removeManifesto(candidateId, electionId);
+      
+      // Then add the new manifesto
+      const result = await this.addManifesto(candidateId, electionId, manifestoText);
+      
+      console.log(`✅ Successfully updated manifesto for candidate ${candidateId}`);
+      return result;
+    } catch (error) {
+      console.error('Error updating manifesto:', error);
+      throw error;
+    }
+  }
+
   static async searchManifestos(
     electionId: string, 
     query: string, 
