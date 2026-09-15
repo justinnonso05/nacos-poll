@@ -115,24 +115,7 @@ How the AI flows work (technical summary)
    - Invokes the LLM (Gemini) via LangChain to generate an answer with supporting quotes and similarity scores.
 4. FAQ generation (`scripts/generate-faq.ts`) runs a set of curated questions through `askAboutManifestos` and persists the results to Prisma.
 
-Security, privacy, and cost considerations
-- Access control: AI endpoints typically check NextAuth session (`getServerSession`) — these endpoints are not public without auth.
-- Data storage: Uploaded manifestos and embeddings are stored in your Postgres/Supabase instance. Plan retention and access controls accordingly.
-- Costs: LLM calls (Gemini) and embedding API calls (HuggingFace inference / other providers) incur costs. Use batching, rate limits, and `ENABLE_AI=false` in CI to avoid surprise bills.
-- Moderation & provenance: Generated answers include quoted manifesto excerpts/sources. Consider adding additional human review steps before publishing AI-generated content in public areas.
 
-Developer tips & maintenance
-- Use a separate Supabase project for staging to avoid polluting production vectors.
-- Monitor Supabase table sizes and prune old/unused embeddings if necessary.
-- Use `ENABLE_AI=false` for unit tests and CI to avoid external calls.
-- The `scripts/generate-faq.ts` script includes delays between calls to reduce rate limits; tune as needed for your provider quotas.
-
-Contributing
-- PRs welcome. When adding AI features, include notes about any new env vars, costs, and data retention implications.
-- If adding public-facing generated content, add an opt-in and moderation workflow.
-
-License
-(Add your preferred license here)
 
 ---
 
